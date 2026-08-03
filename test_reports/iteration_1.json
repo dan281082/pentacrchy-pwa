@@ -1,0 +1,43 @@
+{
+  "summary": "Milestone-1 catalogue journey tested end-to-end on the mock data source at mobile viewport (390x844). Splash renders the APEPS wordmark + spinner and hands off to Home. Home shows hero banner, category rail, Featured/New/Best product rails and support card. Bottom tabs (Home/Shop/Search/Orders/Account) all switch screens; top-bar basket button navigates to Basket and the basket-badge count updates live. Shop screen renders result count, sort sheet (sort-option-*), view-toggle (grid/list) and filter chips (sale/instock/all/cat-*). Product detail works for BOTH simple and variable products: for the variable product (id 104 Protein Powder) add-to-basket-button is correctly disabled and reads 'Select options' until both Flavour + Size are chosen, then it becomes enabled and adds the matched variation. Simple product adds show added-toast and increment basket-badge. Favourite heart toggles from the product page and the /favourites screen lists, removes and re-adds items. Basket supports qty steppers, coupon APEPS10 (coupon-applied appears), a subtotal estimate and an honest 'calculated at checkout' block; tapping proceed-checkout-button surfaces checkout-note. Persistence verified: basket + favourites survive full page reload. Orders and Account tabs render the honest Phase-2 sign-in state; Account shows a MOCK DATA badge and account-favourites/account-basket rows navigate correctly. Category screen loads via /category/[id]. Search screen debounces (>=2 chars), returns results, saves recent searches (with clear-recent-searches), shows category suggestions and a search-empty state. No red-screen errors, no broken tappables, no navigation gaps. Only non-blocking warnings observed on the web preview.",
+  "backend_issues": { "critical": [], "minor": [] },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      { "screen": "shop", "issues": ["React-Native-Web hydration warning: '<button> cannot be a descendant of <button>' logged on the Shop listing. Cosmetic on web only (native unaffected); likely caused by a Pressable nested inside another Pressable in the product card (e.g., favourite heart inside the card Pressable). Consider using a View + onStartShouldSetResponder or splitting the touch targets so the heart is a sibling, not a child, of the card Pressable. Reference: src/components/product/ProductCard.tsx"] }
+    ],
+    "react_native_issues": [
+      { "component": "React-Native-Web deprecation", "issue": "Console warning 'props.pointerEvents is deprecated. Use style.pointerEvents' emitted on Home. Non-blocking; migrate pointerEvents prop usage to style.pointerEvents in components that still pass it as a prop." },
+      { "component": "React 19 ref warning", "issue": "Console warning 'Accessing element.ref was removed in React 19. ref is now a regular prop.' Non-blocking, coming from a dependency; monitor upstream library updates." }
+    ]
+  },
+  "test_report_links": [
+    "/tmp/01_home.png",
+    "/tmp/02_shop.png",
+    "/tmp/03_product.png",
+    "/tmp/09_variable_selected.png",
+    "/tmp/13_var_after.png",
+    "/tmp/18_basket.png",
+    "/tmp/19_orders.png",
+    "/tmp/20_account.png"
+  ],
+  "action_items": [
+    "Optional: migrate any remaining pointerEvents prop usage to style.pointerEvents to silence the RN-Web deprecation warning.",
+    "Optional: eliminate nested Pressable/button on ProductCard to remove the React DOM hydration warning ('<button> cannot be a descendant of <button>') on web preview.",
+    "Nice-to-have: consider auto-focusing the search input on the Search tab for faster catalogue lookup."
+  ],
+  "critical_code_review_comments": [
+    "src/api/mock/data.ts holds a well-shaped catalogue; variable product variation detail lookup in mock/provider.ts is correct and matches the app's selection logic (attr.name → term.name).",
+    "app/product/[id].tsx correctly gates add-to-basket via `product.isPurchasable && (isVariable ? !!(allSelected && matched?.isInStock) : product.isInStock)` and swaps the CTA label between 'Select options' / 'Add to basket' / 'Unavailable' honestly.",
+    "Zustand persistence via src/store/persist.ts + waitForHydration on splash restores basket + favourites reliably before navigating to (tabs).",
+    "Env is respected: EXPO_PUBLIC_DATA_SOURCE=mock exposes the mock provider; live Store API client exists behind the switch (as documented, live is blocked in preview by SiteGround bot protection and CORS)."
+  ],
+  "updated_files": [],
+  "success_rate": { "backend": "N/A", "frontend": "100%" },
+  "seed_data_creation": "None. Preview uses the built-in mock catalogue (src/api/mock/data.ts).",
+  "retest_needed": false,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "App is Expo/RN + expo-router served on web preview at EXPO_PUBLIC_BACKEND_URL. Mock data source (EXPO_PUBLIC_DATA_SOURCE=mock). Key routes verified: /, /(tabs), /shop, /search, /orders, /account, /product/[id] (simple: 101, variable: 104 Protein Powder / 401 Water Bottle), /category/[id] (11 supplements), /favourites, /basket. Variable-product Add-to-basket testIDs use the slug form (e.g. variation-option-Flavour-vanilla, variation-option-Size-500g — lowercase slugs, not term.name). Search screen renders results as ProductRow (data-testid=product-row-*), NOT product-card-* — adjust selectors accordingly. Coupon APEPS10 is a valid demo coupon. Everything else in Milestone 1 is wired and honest.",
+  "rca_of_issue": "No functional defects were found. Two console warnings observed are non-functional (React-Native-Web pointerEvents deprecation, and React 19 element.ref access warning coming from a dependency). One DOM hydration warning on the shop listing stems from nested Pressables inside ProductCard on the web target; native is unaffected."
+}
