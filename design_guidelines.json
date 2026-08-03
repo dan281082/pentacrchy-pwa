@@ -1,0 +1,184 @@
+{
+  "app_name": "Apeps Supplies",
+  "personality": "6 Glass / Luxe with 7 Dark-First Utility clarity",
+  "personality_one_liner": "A dark, premium, and professional mobile commerce experience built on charcoal surfaces and defined by a striking signature blue.",
+  "color": {
+    "surface": "#121214",
+    "onSurface": "#FFFFFF",
+    "surfaceSecondary": "#1C1C1F",
+    "onSurfaceSecondary": "#D4D4D8",
+    "surfaceTertiary": "#27272A",
+    "onSurfaceTertiary": "#A1A1AA",
+    "surfaceInverse": "#FAFAFA",
+    "onSurfaceInverse": "#121214",
+    "brand": "#2563EB",
+    "brandPrimary": "#2563EB",
+    "onBrandPrimary": "#FFFFFF",
+    "brandSecondary": "#3B82F6",
+    "onBrandSecondary": "#FFFFFF",
+    "brandTertiary": "#1E3A8A",
+    "onBrandTertiary": "#93C5FD",
+    "success": "#10B981",
+    "onSuccess": "#022C22",
+    "warning": "#F59E0B",
+    "onWarning": "#451A03",
+    "error": "#EF4444",
+    "onError": "#450A0A",
+    "info": "#3B82F6",
+    "onInfo": "#EFF6FF",
+    "border": "#27272A",
+    "borderStrong": "#3F3F46",
+    "divider": "#27272A"
+  },
+  "typography": {
+    "displayFontFamily": "Satoshi",
+    "textFontFamily": "Geist",
+    "scale": {
+      "sm": 12,
+      "base": 14,
+      "lg": 16,
+      "xl": 20,
+      "2xl": 24
+    }
+  },
+  "spacing": {
+    "rule": "Generous touch targets (44pt+), padded lists, and safe area respects. Focus on clear tonal separation and comfortable readability.",
+    "xs": 4,
+    "sm": 8,
+    "md": 12,
+    "lg": 16,
+    "xl": 24,
+    "2xl": 32,
+    "3xl": 48
+  },
+  "radius_tokens": {
+    "sm": 6,
+    "md": 12,
+    "lg": 20,
+    "pill": 999
+  },
+  "shadow_tier": "0",
+  "navigation": "bottom_tabs",
+  "icon_set": "Ionicons",
+  "glassmorphism": {
+    "enabled": "true",
+    "do's": [
+      "Apply to sticky headers, bottom tab bar, and sticky CTA footer containers.",
+      "Pair blur with a translucent tinted base (≥75% of surface opacity) to ensure foreground text readability in dark mode.",
+      "Apply frosted glass overlay on hero promo cards."
+    ],
+    "dont's": [
+      "Do not blur standard list rows, form fields, or body content.",
+      "Do not rely solely on blur without a tinted base in dark mode, as bright underlying images will break contrast."
+    ]
+  },
+  "platform_libraries": {
+    "glass": {
+      "ios": "expo-glass-effect",
+      "android": "expo-blur",
+      "low_end_android_fallback": "solid surfaceSecondary"
+    },
+    "image": "expo-image",
+    "blur": "expo-blur",
+    "bottom_sheet": "@gorhom/bottom-sheet",
+    "animation": "react-native-reanimated",
+    "gesture": "react-native-gesture-handler"
+  },
+  "screens": [
+    {
+      "name": "Splash",
+      "purpose": "Brand introduction and app load.",
+      "states": {
+        "loading": "Centered Apeps initials (AS) in a brandTertiary circle or text wordmark against the dark charcoal texture, with a subtle ActivityIndicator.",
+        "empty": "N/A",
+        "error": "Offline indicator or connection error message with Retry button."
+      },
+      "layout": "Full-bleed background image with gradient scrim. Centered logo and spinner. Status bar translucent."
+    },
+    {
+      "name": "Home",
+      "purpose": "Discover categories, promos, and recommended products.",
+      "states": {
+        "loading": "Skeleton UI for hero banner and horizontal rails.",
+        "empty": "N/A",
+        "error": "Error message with 'Retry Connection' button."
+      },
+      "layout": "Vertical ScrollView. Glass sticky header with logo left, Search and Basket(with badge) right. Section 1: Hero promo banner (lg radius, background image with top-to-bottom scrim). Section 2: 'Shop by Category' horizontal rail (circular or rounded-rect chips). Section 3: 'Featured/New' horizontal rails (md radius product cards). Floating Action Button for support shortcut."
+    },
+    {
+      "name": "Shop/Categories",
+      "purpose": "Browse products with filtering and sorting.",
+      "states": {
+        "loading": "Grid/list skeleton cards.",
+        "empty": "Illustration/icon with 'No products found' and 'Clear filters' CTA.",
+        "error": "Connection error with retry."
+      },
+      "layout": "Sticky glass header including Search, Grid/List toggle icon, and horizontal ScrollView of filter/sort chips (brandTertiary active state). FlatList with numColumns=2 (Grid) or 1 (List). Infinite scroll indicator at bottom. Pull to refresh enabled."
+    },
+    {
+      "name": "Search",
+      "purpose": "Find products quickly via keyword.",
+      "states": {
+        "loading": "Search skeleton results.",
+        "empty": "'No results found for {query}'.",
+        "error": "Search failed error."
+      },
+      "layout": "Header contains auto-focused Search bar. Below: 'Recent Searches' chip wrap or list, followed by 'Suggestions'. Updates to product list once debounced typing occurs."
+    },
+    {
+      "name": "Product Detail",
+      "purpose": "View item details, variations, and add to basket.",
+      "states": {
+        "loading": "Skeleton layout mapping to image, title, and buttons.",
+        "empty": "Product unavailable.",
+        "error": "Error loading product data."
+      },
+      "layout": "ScrollView. Top: Swipeable/zoomable expo-image gallery. Middle: Title, Price (Sale price in brandPrimary, original strikethrough in onSurfaceTertiary), VAT label, Stock badge. Variation selector pills. Quantity stepper (-/+). Bottom: Expandable description and attributes. Absolute sticky bottom container (glass or surfaceSecondary) housing 'Add to Basket' primary CTA and 'Favourite' icon button."
+    },
+    {
+      "name": "Favourites",
+      "purpose": "List of saved items.",
+      "states": {
+        "loading": "List skeletons.",
+        "empty": "Icon + 'Your favourites list is empty'. 'Start Shopping' CTA.",
+        "error": "Failed to load favourites."
+      },
+      "layout": "Standard FlatList of product cards with remove/unlike capability."
+    },
+    {
+      "name": "Basket",
+      "purpose": "Review items, apply coupons, and checkout.",
+      "states": {
+        "loading": "Cart skeletons.",
+        "empty": "Icon + 'Your basket is empty'. 'Shop Now' CTA.",
+        "error": "Failed to load basket."
+      },
+      "layout": "ScrollView for line items (thumbnail, title, variation, price, inline qty stepper, remove button). Coupon input row. Summary block (Subtotal, Shipping estimate, VAT, Total). Sticky bottom CTA container with prominent 'Proceed to Checkout' primary button."
+    }
+  ],
+  "images": {
+    "splash_bg": {
+      "url": "https://images.unsplash.com/photo-1578662996442-48f60103fc96?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NTYxOTB8MHwxfHNlYXJjaHwxfHxhYnN0cmFjdCUyMGRhcmslMjBjaGFyY29hbCUyMHRleHR1cmUlMjBiYWNrZ3JvdW5kfGVufDB8fHxibGFja3wxNzg1NzM1NjEzfDA&ixlib=rb-4.1.0&q=85",
+      "alt": "Abstract dark charcoal texture"
+    },
+    "home_promo": {
+      "url": "https://images.unsplash.com/photo-1769594362058-d561f024a235?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDk1Nzh8MHwxfHNlYXJjaHwxfHxwcmVtaXVtJTIwbWluaW1hbGlzdCUyMHByb2R1Y3QlMjBkYXJrJTIwYmFja2dyb3VuZHxlbnwwfHx8fDE3ODU3MzU2MTR8MA&ixlib=rb-4.1.0&q=85",
+      "alt": "Premium minimalist product on dark background"
+    },
+    "category_banner": {
+      "url": "https://images.unsplash.com/photo-1760860992203-85ca32536788?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDk1Nzh8MHwxfHNlYXJjaHwyfHxwcmVtaXVtJTIwbWluaW1hbGlzdCUyMHByb2R1Y3QlMjBkYXJrJTIwYmFja2dyb3VuZHxlbnwwfHx8fDE3ODU3MzU2MTR8MA&ixlib=rb-4.1.0&q=85",
+      "alt": "Premium perfume on a glowing podium"
+    }
+  },
+  "instructions_to_main_agent": [
+    "Strict Color Adherence: Use `surface` (#121214) and `surfaceSecondary` (#1C1C1F) for all backgrounds. Avoid pure black. `brandPrimary` (#2563EB) is exclusively for primary CTAs and active states.",
+    "Typography: Maximum font weight is 500 (Medium). Do NOT use 600, 700, or 'bold'. Achieve hierarchy through size (`xl`, `2xl`) and color contrast (`onSurface` vs `onSurfaceTertiary`).",
+    "Layout Rules: Cards must span the full row minus padding (single column) or be properly flex-wrapped with `space-between` (grid). Use `md` (12px) border radius for standard cards.",
+    "Sticky CTAs: On Product Detail and Basket screens, the main CTA must be pinned to the bottom (outside the ScrollView) in a fixed container with safe-area padding and a glass/blur background.",
+    "Price & VAT: Display sale prices with the original price struck through using `onSurfaceTertiary`. Ensure VAT-inclusive labels are distinctly muted.",
+    "Component Details: Tab bar should use outlined icons for inactive, filled for active. Top bar requires a prominent Basket icon with a live count badge.",
+    "Images: Ensure any text layered over imagery uses a vertical linear-gradient scrim (transparent to surfaceInverse) to guarantee WCAG contrast.",
+    "Empty States: All empty/error states must occupy the full flex region and use a combination of an icon (Ionicons, no emojis), muted text, and a primary action.",
+    "Haptics: Attach subtle haptic feedback to variation selectors, qty steppers, and 'Add to Basket' buttons."
+  ]
+}
