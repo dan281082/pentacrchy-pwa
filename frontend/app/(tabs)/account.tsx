@@ -7,6 +7,8 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { TopBar } from "@/src/components/ui/TopBar";
 import { env } from "@/src/config/env";
 import { activeDataSource } from "@/src/api/catalogue";
+import { getCustomerModules, groupModules } from "@/src/modules/registry";
+import type { ModuleDefinition } from "@/src/modules/types";
 import { useFavouritesStore } from "@/src/store/favourites-store";
 import { colors, radius, spacing, fontSize, fontWeight } from "@/src/theme";
 
@@ -38,11 +40,30 @@ function Section({ title, children }: { title: string; children: React.ReactNode
   );
 }
 
+function ModuleRow({ module, onPress }: { module: ModuleDefinition; onPress: () => void }) {
+  return (
+    <Pressable testID={`module-row-${module.id}`} onPress={onPress} style={({ pressed }) => [styles.row, pressed && styles.pressed]}>
+      <Ionicons name={module.icon} size={20} color={colors.onSurfaceSecondary} />
+      <View style={{ flex: 1 }}>
+        <Text style={styles.rowLabel}>{module.title}</Text>
+        <Text style={styles.moduleDesc} numberOfLines={1}>{module.description}</Text>
+      </View>
+      {module.status !== "available" && (
+        <View style={styles.soonBadge}>
+          <Text style={styles.soonText}>{module.status === "beta" ? "BETA" : "SOON"}</Text>
+        </View>
+      )}
+      <Ionicons name="chevron-forward" size={18} color={colors.onSurfaceTertiary} />
+    </Pressable>
+  );
+}
+
 export default function AccountScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const favCount = useFavouritesStore((s) => s.ids.length);
   const web = (path: string) => WebBrowser.openBrowserAsync(`${env.websiteUrl}${path}`).catch(() => {});
+  const ecosystem = groupModules(getCustomerModules("account"));
 
   return (
     <View style={styles.container} testID="account-screen">
@@ -64,6 +85,23 @@ export default function AccountScreen() {
           <Row icon="bag-handle-outline" label="Basket" onPress={() => router.push("/basket")} testID="account-basket" />
           <Row icon="receipt-outline" label="Orders" onPress={() => router.push("/(tabs)/orders")} testID="account-orders" />
         </Section>
+
+        {/* Apeps ecosystem — rendered dynamically from the module registry.
+            Future modules appear here automatically by adding a registry entry. */}
+        {ecosystem.map(({ group, items }) => (
+          <View key={group} style={styles.section} testID={`ecosystem-${group}`}>
+            <Text style={styles.sectionTitle}>{group}</Text>
+            <View style={styles.card}>
+              {items.map((m) => (
+                <ModuleRow
+                  key={m.id}
+                  module={m}
+                  onPress={() => router.push({ pathname: "/module/[id]", params: { id: m.id } })}
+                />
+              ))}
+            </View>
+          </View>
+        ))}
 
         <Section title="Support">
           <Row icon="help-circle-outline" label="Help & contact" onPress={() => WebBrowser.openBrowserAsync(env.supportUrl).catch(() => {})} testID="account-support" />
@@ -121,6 +159,9 @@ const styles = StyleSheet.create({
   pressed: { backgroundColor: colors.surfaceTertiary },
   rowLabel: { flex: 1, color: colors.onSurface, fontSize: fontSize.base },
   rowValue: { color: colors.onSurfaceTertiary, fontSize: fontSize.base },
+  moduleDesc: { color: colors.onSurfaceTertiary, fontSize: fontSize.sm, marginTop: 1 },
+  soonBadge: { backgroundColor: colors.brandTertiary, borderRadius: radius.sm, paddingHorizontal: spacing.sm, paddingVertical: 2 },
+  soonText: { color: colors.onBrandTertiary, fontSize: 9, fontWeight: fontWeight.medium, letterSpacing: 0.5 },
   badge: { borderRadius: radius.sm, paddingHorizontal: spacing.sm, paddingVertical: 3 },
   badgeLive: { backgroundColor: colors.success },
   badgeMock: { backgroundColor: colors.surfaceTertiary },
