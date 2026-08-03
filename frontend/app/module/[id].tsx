@@ -4,6 +4,7 @@ import { StyleSheet, View } from "react-native";
 import { EmptyState } from "@/src/components/ui/EmptyState";
 import { TopBar } from "@/src/components/ui/TopBar";
 import { MODULE_COMPONENTS } from "@/src/modules/component-map";
+import { ModuleErrorBoundary } from "@/src/modules/shared/ModuleErrorBoundary";
 import { ModulePlaceholder } from "@/src/modules/ModulePlaceholder";
 import { getModuleById } from "@/src/modules/registry";
 import { colors } from "@/src/theme";
@@ -29,7 +30,9 @@ export default function ModuleHost() {
   return (
     <View style={styles.container} testID={`module-${module.id}`}>
       <TopBar title={module.title} showBack showBasket={false} />
-      {module.status !== "planned" && Component ? <Component /> : <ModulePlaceholder module={module} />}
+      <ModuleErrorBoundary>
+        {module.status !== "planned" && Component ? <Component /> : <ModulePlaceholder module={module} />}
+      </ModuleErrorBoundary>
     </View>
   );
 }

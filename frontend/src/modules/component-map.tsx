@@ -1,13 +1,19 @@
 // ── Module component map ─────────────────────────────────────────────────────
 // Maps a module id → its screen component for modules hosted by the generic
-// /module/[id] route. When you BUILD a module, register it here (or give the
-// module a dedicated `route` in registry.ts instead). Empty for now — every
-// module is still "planned", so the generic host shows a roadmap placeholder.
-//
-// Example (future):
-//   import { LoyaltyDashboard } from "./loyalty-dashboard/screen";
-//   export const MODULE_COMPONENTS = { "loyalty-dashboard": LoyaltyDashboard };
+// /module/[id] route. Registered here once a module is scaffolded/built.
+// Modules with `status: "planned"` (and no entry here) fall back to the roadmap
+// placeholder in the host.
 
 import type { ComponentType } from "react";
 
-export const MODULE_COMPONENTS: Record<string, ComponentType> = {};
+import { LiveTrackingScreen } from "./live-tracking";
+import { LoyaltyDashboardScreen } from "./loyalty-dashboard";
+import { NotificationCentreScreen } from "./notification-centre";
+import { RefillClubScreen } from "./refill-club";
+
+export const MODULE_COMPONENTS: Record<string, ComponentType> = {
+  "loyalty-dashboard": LoyaltyDashboardScreen,
+  "live-tracking": LiveTrackingScreen as ComponentType,
+  "notification-centre": NotificationCentreScreen,
+  "refill-club": RefillClubScreen,
+};
