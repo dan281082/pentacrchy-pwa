@@ -55,6 +55,10 @@ async def get_status_checks():
 # Include the router in the main app
 app.include_router(api_router)
 
+# GLP trusted proxy (server-to-server to the WordPress GLP connector).
+from glp_proxy import glp_router  # noqa: E402
+app.include_router(glp_router)
+
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,

@@ -67,9 +67,39 @@ Secure customer API delivered as a WordPress plugin ("Apeps App Connector") — 
   Store API cart/shipping wiring pending staging access.
 - Cosmetic web-only warnings (pointerEvents prop; nested Pressable hydration on ProductRail).
 
-## Backlog (prioritised)
-- **P0:** Unblock staging WAF → flip `EXPO_PUBLIC_DATA_SOURCE=live` + set connector base URL →
-  verify auth/register/approval + orders/tracking against real WooCommerce staging data.
-- **P1:** Store API cart + shipping rates; secure website-checkout handoff end-to-end.
-- **P2:** iOS release; owner/admin dashboard (separate app/auth).
+## Live crypto-checkout integration (2026-06, in progress)
+Confirmed direction: real **in-app USDT (TRON/TRC20) checkout** via the existing **GLP App
+Connector v2.0.0** + **Apeps Crypto Payments Gateway** (gateway id `apeps_crypto`), WooCommerce
+authoritative, **no website redirect, no Stripe**, Crypto Test Mode during dev.
+
+Architecture (confirmed A+B):
+- **A. Trusted FastAPI proxy** (`backend/glp_proxy.py`, mounted at `/api/glp/*`, port 8001): holds
+  `GLP_APP_SHARED_SECRET` server-side (never in the app), forwards to `{GLP_BASE_URL}/wp-json/glp/v1/*`
+  with the secret + the customer's opaque `X-GLP-Customer-Token`. Routes: auth/register, auth/session,
+  me, me/addresses, account/shipping-address, categories, catalogue, products/{id}, basket/validate,
+  shipping/quote, orders (GET/POST), orders/{id}, crypto/networks, crypto-invoice, crypto-recheck,
+  crypto-network, cancel, health. `GLP_BASE_URL` in `backend/.env`; secret injected via server secrets.
+- **B. GLP connector extended** (`backend/_glp_ref/glp-app-connector/glp-app-connector.php`, repackaged
+  `backend/glp-app-connector.zip`): added `POST /glp/v1/register` — required+validated Telegram username
+  (`_glp_telegram_username`), creates WC customer, `_glp_app_approved=yes` + `glp_customer` role (auto-
+  approve), returns `{customer, token}` like `/session`; `telegram_username` added to `glp_public_customer`.
+- Stock re-validation already enforced server-side in the GLP connector (`glp_validate_items` → 409
+  `basket_invalid` immediately before `wc_create_order`).
+
+Invoice/order contract (from connector source): `POST /orders` {items[{product_id,qty,variation_id}],
+payment_method:'crypto', network, shipping_address, shipping_method(rate id), client_ref}; invoice via
+`GET /orders/{id}/crypto-invoice` (`invoice.to_public_array()` + `payment_uri` for QR + `network_label`);
+statuses awaiting_payment→payment_detected→confirming→complete, plus expired/partially_paid/underpaid/
+overpaid/failed/cancelled; `complete` → gateway `payment_complete()` → WooCommerce Processing.
+
+### BLOCKED / remaining before go-live test
+- **Server secret:** proxy returns `proxy_unconfigured` until `GLP_APP_SHARED_SECRET` is set in backend
+  server env (user to add; must match staging `wp-config.php`).
+- **WAF:** `staging2.apeps.co.uk` still returns **HTTP 202 sg-captcha** for egress IP `34.16.56.64`
+  (confirmed 2026-10-10T08:58Z on `/wp-json/glp/v1/version`). SiteGround must stop challenging this IP.
+- **Frontend rewire (next):** add a GLP data/auth provider hitting `/api/glp/*` (switch via
+  `EXPO_PUBLIC_DATA_SOURCE=glp`), keep current mock as default so preview stays functional; build the
+  in-app crypto checkout (address → shipping → place order → USDT invoice screen w/ amount+address+QR +
+  status polling → success → My Orders). Then run the full live staging e2e test.
+
 
