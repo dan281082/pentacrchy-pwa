@@ -52,6 +52,17 @@ async def get_status_checks():
     status_checks = await db.status_checks.find().to_list(1000)
     return [StatusCheck(**status_check) for status_check in status_checks]
 
+@api_router.get("/download/glp-connector")
+async def download_glp_connector():
+    """Serve the updated GLP App Connector plugin zip for the user to install."""
+    from fastapi.responses import FileResponse
+    zip_path = ROOT_DIR / "glp-app-connector.zip"
+    return FileResponse(
+        str(zip_path),
+        media_type="application/zip",
+        filename="glp-app-connector.zip",
+    )
+
 # Include the router in the main app
 app.include_router(api_router)
 
