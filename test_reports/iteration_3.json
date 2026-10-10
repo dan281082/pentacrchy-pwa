@@ -1,0 +1,32 @@
+{
+  "summary": "Backend-only verification that the GLP trusted proxy (/api/glp/*) connectivity bug (sg-captcha 202) is fixed. All 3 non-destructive checks PASS against the external preview URL (EXPO_PUBLIC_BACKEND_URL=https://apeps-mobile-demo.preview.emergentagent.com): (1) GET /api/glp/health -> HTTP 200 JSON {ok:true, secret_configured:true, glp_base_url:'https://ap3p-fitness.com', upstream_reachable:true, upstream_status:200} and no secret leakage in the body. (2) POST /api/glp/auth/session with {username:'nobody@example.com', password:'wrongpass'} -> HTTP 401 application/json {\"error\":\"invalid_credentials\"} — upstream error cleanly proxied, no 500/crash, no sg-captcha. (3) GET /api/glp/crypto/networks with NO Authorization header -> HTTP 401 application/json {\"code\":\"glp_unauthorized\",\"message\":\"Unauthorized\",\"data\":{\"status\":401}} — unauthenticated request correctly surfaces upstream 401 (not 5xx, not 503 bot-block). The X-GLP-App-Secret header is server-side only in /app/backend/.env and is never echoed in any response. No destructive endpoints were touched (no /auth/register, no POST /orders).",
+  "backend_issues": { "critical": [], "minor": [] },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [],
+    "react_native_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_glp_proxy.py",
+    "/app/test_reports/pytest/pytest_glp_proxy.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "backend/glp_proxy.py: User-Agent set to 'AP3P-Storefront-API/1.0' and GLP_BASE_URL='https://ap3p-fitness.com' with X-GLP-App-Secret header — matches the fix spec and resolves the SiteGround sg-captcha 202 regression.",
+    "backend/glp_proxy.py:_forward() has defense-in-depth: detects sg-captcha HTML and converts it to a traceable 503 upstream_blocked error (not a silent 200 with HTML body) — good observability.",
+    "backend/glp_proxy.py:_secret() short-circuits to 503 proxy_unconfigured when the shared secret is missing — prevents accidental anonymous calls to the connector.",
+    "backend/glp_proxy.py: Authorization: Bearer <token> is correctly rewritten to X-GLP-Customer-Token upstream; the client never needs to know the shared secret.",
+    "backend/.env: GLP_APP_SHARED_SECRET is server-side only; it is not present in /app/frontend/.env and is not echoed by /api/glp/health (verified by test_health_does_not_leak_secret).",
+    "No-store cache-control is set on all proxied responses — correct for authenticated and invoice reads."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_glp_proxy.py (new pytest suite — 8 tests, all passing)"
+  ],
+  "success_rate": { "backend": "100% (8/8 pytest cases passing; 3/3 review-request features verified)", "frontend": "N/A (skipped per review request — backend only)" },
+  "seed_data_creation": "None.",
+  "retest_needed": false,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "Preview backend URL: https://apeps-mobile-demo.preview.emergentagent.com. GLP proxy routes live under /api/glp/*. Server-side GLP_APP_SHARED_SECRET is set in /app/backend/.env and GLP_BASE_URL points to https://ap3p-fitness.com. Reusable pytest suite at /app/backend/tests/test_glp_proxy.py (run: `pytest /app/backend/tests/test_glp_proxy.py -v`). STRICTLY non-destructive scope: do NOT call /api/glp/auth/register and do NOT POST /api/glp/orders without explicit user approval. Expected observed proxied responses: /api/glp/health=200 {upstream_status:200}, /api/glp/auth/session (bad creds)=401 {error:'invalid_credentials'}, /api/glp/crypto/networks (no auth)=401 {code:'glp_unauthorized'}.",
+  "rca_of_issue": "Original symptom: every /api/glp/* call returned HTTP 202 with a SiteGround 'sg-captcha' HTML challenge body, blocking all connectivity. Root cause: the proxy was previously sending a browser-mimicking User-Agent and/or hitting the wrong host; SiteGround's AntiBot layer refused non-browser traffic that looked like a disguised browser. Mitigation (applied by main agent, verified here): (a) User-Agent switched to a dedicated server-to-server identifier 'AP3P-Storefront-API/1.0'; (b) GLP_BASE_URL aligned to https://ap3p-fitness.com; (c) GLP_APP_SHARED_SECRET aligned with the WordPress plugin. Verification: /api/glp/health returns upstream_status=200 (no HTML, no 202), /auth/session surfaces a real 401 JSON from WordPress, and /crypto/networks surfaces a real 401 JSON from the WordPress connector — all three indicate the sg-captcha challenge is no longer served and the proxy transparently forwards upstream responses."
+}

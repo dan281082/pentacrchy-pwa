@@ -16,6 +16,41 @@
 # 
 ## user_problem_statement: {problem_statement}
 ## backend:
+  - task: "GLP trusted proxy connectivity to WordPress connector (WAF/host/secret fix)"
+    implemented: true
+    working: "NA"
+    file: "backend/glp_proxy.py, backend/server.py, backend/.env"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        -working: "NA"
+        -agent: "main"
+        -comment: >
+          Reported issue: all requests to the WordPress connector returned HTTP 202 sg-captcha, so the
+          app/proxy could not reach the backend. Root causes found + fixed: (1) browser-mimicking
+          User-Agent triggered SiteGround AntiBot -> changed proxy UA to 'AP3P-Storefront-API/1.0';
+          (2) wrong backend host -> the GLP connector (glp/v1) lives on ap3p-fitness.com, not
+          staging2.apeps.co.uk -> set GLP_BASE_URL=https://ap3p-fitness.com; (3) shared secret aligned
+          by user. Direct + proxy checks now return HTTP 200 ({"connector":"2.0.0"}) and
+          /api/glp/health reports upstream_reachable:true, upstream_status:200. VERIFY via the proxy
+          only (no full e2e journey yet per user): health endpoint + that proxy surfaces upstream auth
+          errors (401/403) rather than 5xx. Do NOT place orders or register (register route not yet
+          installed on the live site).
+
+agent_communication:
+    -agent: "main"
+    -message: >
+      BACKEND-ONLY, NON-DESTRUCTIVE verification requested. The user explicitly forbade the full
+      end-to-end test for now. Test ONLY the FastAPI proxy at the external backend URL (use
+      EXPO_BACKEND_URL/EXPO_PUBLIC_BACKEND_URL + /api/glp/...): (1) GET /api/glp/health returns
+      ok:true, secret_configured:true, upstream_reachable:true, upstream_status:200. (2) POST
+      /api/glp/auth/session with clearly-invalid credentials returns a proxied upstream auth error
+      (401/403 JSON) and NOT a 500/proxy crash. (3) GET /api/glp/crypto/networks with no Authorization
+      returns a proxied 401/403 (not 5xx). DO NOT call /api/glp/auth/register, DO NOT POST
+      /api/glp/orders, DO NOT place any order or create accounts. This only verifies the connectivity
+      fix + proxy robustness. The GLP shared secret must never appear in logs/responses.
+
 ##   - task: "Task name"
 ##     implemented: true
 ##     working: true  # or false or "NA"

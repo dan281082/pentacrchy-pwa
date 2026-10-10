@@ -92,7 +92,19 @@ payment_method:'crypto', network, shipping_address, shipping_method(rate id), cl
 statuses awaiting_payment→payment_detected→confirming→complete, plus expired/partially_paid/underpaid/
 overpaid/failed/cancelled; `complete` → gateway `payment_complete()` → WooCommerce Processing.
 
-### BLOCKED / remaining before go-live test
+### Connectivity — RESOLVED (2026-10-10)
+- Backend host is **`https://ap3p-fitness.com`** (hosts `glp/v1` + crypto routes), NOT staging2.apeps.co.uk
+  (staging2 only runs legacy apeps/v1+apeps/v2). `GLP_BASE_URL` updated accordingly.
+- SiteGround AntiBot 202/sg-captcha fixed by using a non-browser server UA **`AP3P-Storefront-API/1.0`**
+  for all proxy→WordPress requests (`backend/glp_proxy.py`).
+- `GLP_APP_SHARED_SECRET` aligned to ap3p-fitness.com's wp-config value (server-side only).
+- Verified by testing agent: `GET /api/glp/health` → 200 `upstream_reachable:true`; bad-creds
+  `/auth/session` → proxied 401; `/crypto/networks` (no token) → proxied 401. Secret never leaked.
+- OUTSTANDING: `/glp/v1/register` (my addition) not yet installed on ap3p-fitness.com (404) — user to
+  install `backend/glp-app-connector.zip`. Full end-to-end test deferred per user until then.
+
+### (superseded) earlier blocked notes
+
 - **Server secret:** proxy returns `proxy_unconfigured` until `GLP_APP_SHARED_SECRET` is set in backend
   server env (user to add; must match staging `wp-config.php`).
 - **WAF:** `staging2.apeps.co.uk` still returns **HTTP 202 sg-captcha** for egress IP `34.16.56.64`

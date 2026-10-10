@@ -30,9 +30,9 @@ GLP_BASE_URL = os.environ.get("GLP_BASE_URL", "https://staging2.apeps.co.uk").rs
 GLP_NS = "/wp-json/glp/v1"
 TIMEOUT = httpx.Timeout(30.0, connect=15.0)
 
-# Browser-ish UA so upstream bot-protection is less likely to challenge the
-# server-to-server call (the sg-captcha JS challenge cannot be solved here).
-_UA = "Mozilla/5.0 (Linux; Android 13) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Mobile Safari/537.36"
+# Dedicated server-to-server User-Agent (NOT a browser UA — a browser-mimicking
+# UA triggers SiteGround AntiBot since this is not a real browser).
+_UA = "AP3P-Storefront-API/1.0"
 
 glp_router = APIRouter(prefix="/api/glp")
 
