@@ -1,0 +1,55 @@
+{
+  "summary": "FULL BACKEND PURCHASE JOURNEY VERIFIED END-TO-END (13/13 pytest cases PASS) against the real connector on https://ap3p-fitness.com via the FastAPI trusted proxy at EXPO_PUBLIC_BACKEND_URL=https://apeps-mobile-demo.preview.emergentagent.com. The reported /register-404 regression is FIXED — the /wp-json/glp/v1 namespace now registers /register (empty-body returns 400 invalid_input, bad telegram returns 400 telegram_invalid, happy-path returns 200 with a valid token and customer.approved=true, customer.telegram_username set). Full chain traversed on a brand-new customer: register -> /me -> /catalogue (12 products, in-stock items present) -> /products/177 (type=variable, 3 variations incl. variation_id=236 purchasable=true) -> /basket/validate (valid=true, subtotal_display set) -> /shipping/quote (flat_rate:1 returned) -> POST /orders (crypto/tron, order_id=257, number=257, status=pending, payment_method=apeps_crypto, total=£93.99) -> /orders/257/crypto-invoice (network=tron, token=USDT, status=awaiting_payment, amount=125.80 USDT, fiat_total=93.99, address=TDdQVni8hTxmu6sCaxYeiKoHJo91EQUJJt, payment_uri+network_label+required_confirmations+remaining_seconds all present) -> /orders list contains the new order -> /crypto/networks includes a tron/TRC20 entry. CRITICAL OBSERVATION: invoice.test_mode == false on the live upstream. This matches what the main agent flagged — the WooCommerce Apeps-crypto plugin on ap3p-fitness.com is NOT in Crypto Test Mode, which means test invoices will NOT auto-progress to paid status on-chain. If 'Crypto Test Mode' was intended for this verification run, the plugin flag needs to be flipped on the WordPress side; the proxy and connector are otherwise healthy end-to-end.",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {
+        "endpoint": "GET /api/glp/orders/{id}/crypto-invoice",
+        "issue": "Observed invoice.test_mode = false on the live backend. Review request intended Crypto Test Mode; main agent explicitly asked to report this value. If Test Mode is expected, enable it in the Apeps crypto plugin settings on ap3p-fitness.com (WordPress admin), otherwise created test orders remain genuinely 'awaiting_payment' with real TRC20 USDT addresses and will not auto-progress to paid."
+      },
+      {
+        "endpoint": "GET /api/glp/products/{id}",
+        "issue": "Response is wrapped as {\"product\": {...}} rather than the flat shape used by /catalogue items. Not a bug (connector-side decision) but worth noting for mobile clients — they must unwrap .product on this endpoint only."
+      },
+      {
+        "endpoint": "GET /api/glp/catalogue",
+        "issue": "stock_status values use underscores ('in_stock' / 'low_stock' / 'out_of_stock') rather than WooCommerce canonical ('instock' / 'outofstock'). Harmless but the mobile app must match these exact strings when filtering stock."
+      }
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [],
+    "react_native_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_glp_e2e_purchase.py",
+    "/app/backend/tests/test_glp_proxy.py",
+    "/app/test_reports/pytest/pytest_glp_e2e_purchase.xml"
+  ],
+  "action_items": [
+    "Confirm with user whether invoice.test_mode is expected to be TRUE for this backend. If yes, enable 'Crypto Test Mode' / sandbox flag in the Apeps crypto payment-method settings on ap3p-fitness.com (WordPress admin). Current live value is false — real tron TRC20 USDT addresses are being issued (test order 257 got address TDdQVni8hTxmu6sCaxYeiKoHJo91EQUJJt, amount 125.80 USDT).",
+    "Housekeeping: a real WooCommerce test customer (customer_id=10) and order (id=257) were created under authorization. Decide whether to leave them or cancel/delete via WP admin.",
+    "Optional connector improvement: consider unwrapping /products/{id} to match the flat product shape used by /catalogue so mobile clients only need one parser."
+  ],
+  "critical_code_review_comments": [
+    "backend/glp_proxy.py: /auth/register correctly maps camelCase client fields (firstName, lastName, telegramUsername) to snake_case upstream keys (first_name, last_name, telegram_username). Verified end-to-end — upstream now returns 200 with token and customer object.",
+    "backend/glp_proxy.py: Bearer -> X-GLP-Customer-Token rewrite works for every authenticated route exercised (/me, /catalogue, /products, /basket/validate, /shipping/quote, POST /orders, /orders list, crypto-invoice, crypto/networks).",
+    "backend/glp_proxy.py: X-GLP-App-Secret stays server-side (confirmed by test_health_does_not_leak_secret in the companion suite and by inspecting all proxied response bodies).",
+    "backend/glp_proxy.py: 400s from the upstream connector (empty body, telegram_invalid) are transparently proxied — the proxy does NOT swallow them as 500s. Good observability.",
+    "backend/glp_proxy.py: sg-captcha detector (bot-protection HTML -> 503 upstream_blocked) did not trigger even once across the 13-step journey — confirms UA 'AP3P-Storefront-API/1.0' is accepted by SiteGround on ap3p-fitness.com."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_glp_e2e_purchase.py (new — 13-step end-to-end pytest suite; all passing)"
+  ],
+  "success_rate": {
+    "backend": "100% (13/13 pytest cases passing; all 13 features from review request verified)",
+    "frontend": "N/A (skipped per review request — backend only)"
+  },
+  "seed_data_creation": "Authorized test data created on the real WooCommerce backend (per review-request authorization): customer email=testap3p_1791632240ff7426@mailinator.com, telegram=ap3ptst_1791632240ff7426, customer_id=10, order_id=257 (apeps_crypto/tron, pending, £93.99 / 125.80 USDT, TRC20 address TDdQVni8hTxmu6sCaxYeiKoHJo91EQUJJt). Additional invalid-input probes (empty body + bad telegram) did not create records (upstream returned 400).",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Backend proxy at /api/glp/* is healthy end-to-end against the real connector on https://ap3p-fitness.com. Reusable suites: /app/backend/tests/test_glp_proxy.py (non-destructive) and /app/backend/tests/test_glp_e2e_purchase.py (DESTRUCTIVE — creates a real customer + order per run; only run with explicit user authorization). Known-good test fixtures: product_id=177, variation_id=236, shipping_method=flat_rate:1, network=tron, postcode=EC1A 1BB, country=GB. The connector returns /products/{id} wrapped as {\"product\": {...}} but /catalogue items are flat. stock_status enum from the connector: 'in_stock' | 'low_stock' | 'out_of_stock'. Note: live backend currently has invoice.test_mode=false — do NOT send real crypto; cancel test orders via WP admin after the run.",
+  "rca_of_issue": "Previous reported bug: POST /wp-json/glp/v1/register returned 404 because the entire glp/v1 namespace registered 0 routes (fatal from a duplicate plugin copy preventing register_rest_route from running). After the user re-installed a single active copy of the updated 'GLP App Connector', the namespace now registers properly: /register responds with 200 on valid input, 400 invalid_input on empty body, and 400 telegram_invalid on bad telegram — all three paths verified in this run (not 404). The companion endpoints in the same namespace (/me, /catalogue, /products, /basket/validate, /shipping/quote, /orders, /orders/{id}/crypto-invoice, /crypto/networks) are also fully live, confirming the entire route table was re-registered on plugin re-activation."
+}

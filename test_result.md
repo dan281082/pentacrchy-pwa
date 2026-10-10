@@ -15,7 +15,28 @@
 # The testing data must be entered in yaml format Below is the data structure:
 # 
 ## user_problem_statement: {problem_statement}
-## backend:
+##   - task: "Full backend E2E through proxy against real GLP connector (register→catalogue→basket→shipping→crypto order→invoice)"
+    implemented: true
+    working: "NA"
+    file: "backend/glp_proxy.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        -working: "NA"
+        -agent: "main"
+        -comment: >
+          /glp/v1/register is now live on ap3p-fitness.com (duplicate-plugin fatal resolved).
+          Manual run via proxy succeeded: register (approved:true, telegram stored), /me, /catalogue
+          (real products e.g. id 177 'C-10' variable, variation 236), /basket/validate (valid), 
+          /shipping/quote (flat_rate:1 £6.00), POST /orders payment_method=crypto network=tron -> order
+          #253 status pending total £93.99 pm apeps_crypto, GET /orders/{id}/crypto-invoice -> full
+          invoice {network:tron, token:USDT, address, amount, fiat_total, status:awaiting_payment,
+          required_confirmations:15, remaining_seconds, payment_uri 'tron:...?token=...&amount=...',
+          network_label 'TRON (TRC20)', test_mode:FALSE}. ISSUE: gateway test_mode is FALSE (should be
+          Test Mode per user) -> payment will NOT auto-progress to complete; user must enable Test Mode.
+
+backend:
   - task: "GLP trusted proxy connectivity to WordPress connector (WAF/host/secret fix)"
     implemented: true
     working: "NA"

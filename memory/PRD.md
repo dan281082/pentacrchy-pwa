@@ -104,7 +104,6 @@ overpaid/failed/cancelled; `complete` → gateway `payment_complete()` → WooCo
   install `backend/glp-app-connector.zip`. Full end-to-end test deferred per user until then.
 
 ### (superseded) earlier blocked notes
-
 - **Server secret:** proxy returns `proxy_unconfigured` until `GLP_APP_SHARED_SECRET` is set in backend
   server env (user to add; must match staging `wp-config.php`).
 - **WAF:** `staging2.apeps.co.uk` still returns **HTTP 202 sg-captcha** for egress IP `34.16.56.64`
