@@ -1,0 +1,42 @@
+{
+  "summary": "End-to-end frontend test of the Apeps members' storefront auth/approval build on the mobile web preview (viewport 390x844, EXPO_PUBLIC_DATA_SOURCE=mock). All 8 features from the review request PASSED: (1) Registration validation — Telegram username REQUIRED (empty → 'required' inline error), 5-32 char rule (3-char input blocked), allow-list enforced (bad-user with dash rejected); valid new email + new telegram auto-approves and lands on home-screen; duplicate email returns 'An account with those details already exists.' and duplicate telegram returns 'That Telegram username is already registered.'. (2) Login — demo@apeps.co.uk / Password123 lands on home-screen; wrong password shows login-error 'Email or password is incorrect.' (3) Approval gate — pending@apeps.co.uk lands on pending-screen with @pending_member telegram, 'Check approval status' (pending-refresh) and 'Sign out' (pending-logout). (4) Route guards — pending user navigating to /, /orders or /account is kept on /pending (home-screen/orders-screen never leak); after Sign out the user returns to /login; signed-out user hitting /orders is redirected to /login. (5) My Orders — lists 3 mock orders (10234/10251/10260) with status pills; opening APS-10251 (processing, dispatched) renders items list and a Royal Mail tracking timeline with 'Track on carrier website' (order-track-button) visible for dispatched orders. (6) Basket — NO coupon input anywhere (no 'coupon' text, no coupon-* testID), line items render with QuantityStepper, subtotal estimate is shown, and 'Checkout securely' (proceed-checkout-button) is present. (7) Vials tab — labelled 'Vials' in the tab bar; shop screen renders 'Available Vials' header; Home shows an 'Available now' rail (home-available-rail). (8) Account — shows 'Demo Member', email, @demo_member telegram, 'Approved' badge, and 'Sign out' returns the user to /login. No red-screen errors. Minor non-blocking warnings carry over from iteration-1 (RN-Web pointerEvents prop deprecation, nested <button> hydration warning in a FlatList row).",
+  "backend_issues": { "critical": [], "minor": [] },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [],
+    "react_native_issues": [
+      { "component": "React-Native-Web deprecation", "issue": "Console warning 'props.pointerEvents is deprecated. Use style.pointerEvents' persists on multiple screens. Non-blocking web-only warning; migrate pointerEvents prop usage to style.pointerEvents. Reference: likely in a shared layout/component used by the Tabs navigator." },
+      { "component": "DOM hydration warning (web only)", "issue": "'<button> cannot be a descendant of <button>' hydration error logged on the home FlatList (ProductRail) — nested Pressable (favourite heart) inside the card Pressable. Web-only; native unaffected. Reference: src/components/product/ProductCard.tsx." }
+    ]
+  },
+  "test_report_links": [
+    "/tmp/01_login.png",
+    "/tmp/02_home.png",
+    "/tmp/03_orders.png",
+    "/tmp/04_order_detail.png",
+    "/tmp/05_account.png",
+    "/tmp/06_basket.png",
+    "/tmp/09_pending.png",
+    "/tmp/G_home_after_reg.png"
+  ],
+  "action_items": [
+    "Optional: migrate remaining pointerEvents prop usage to style.pointerEvents to silence the RN-Web deprecation warning (carried over from iteration 1).",
+    "Optional: eliminate nested Pressable/button on ProductCard to clear the '<button> cannot be a descendant of <button>' hydration warning on web preview (carried over from iteration 1)."
+  ],
+  "critical_code_review_comments": [
+    "src/context/auth.tsx has a clean state machine (loading → signedOut | pending | ready) with cold-start restore and best-effort re-validation of approval via auth.me — correctly prevents stale cached approvals from granting access.",
+    "src/api/auth/mock.ts enforces Telegram validation via normalizeTelegram, auto-approves on valid Telegram, and correctly returns distinct errors for duplicate email vs duplicate telegram; seed accounts are idempotently created on first load.",
+    "app/(tabs)/_layout.tsx and app/pending.tsx cross-redirect correctly so pending users cannot reach /(tabs) and approved users cannot stay on /pending.",
+    "app/basket.tsx has no coupon field, no 'coupon' copy, and only an honest 'Calculated at checkout' VAT/shipping block — matches the user-choice spec (no coupons/loyalty).",
+    "app/(tabs)/_layout.tsx tab-shop title is 'Vials' and shop header renders 'Available Vials' as required.",
+    "app/(tabs)/account.tsx member card shows name, email, @telegram and a persistent 'Approved' badge; logout clears the session and returns to /login."
+  ],
+  "updated_files": [],
+  "success_rate": { "backend": "N/A (frontend-only test, mock data source)", "frontend": "100% (8/8 features from review request passing)" },
+  "seed_data_creation": "None — the mock auth provider seeds demo@apeps.co.uk and pending@apeps.co.uk on first launch into AsyncStorage.",
+  "retest_needed": false,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "Preview URL: https://apeps-mobile-demo.preview.emergentagent.com. EXPO_PUBLIC_DATA_SOURCE=mock. Seeded accounts: demo@apeps.co.uk / Password123 (approved) and pending@apeps.co.uk / Password123 (pending). Important: mock accounts persist in AsyncStorage/localStorage across runs, so clear storage before registration tests (page.evaluate('localStorage.clear(); sessionStorage.clear()')). Key testIDs: login-screen, login-email, login-password, login-submit, login-error, go-register, register-screen, register-first-name, register-last-name, register-email, register-telegram, register-password, register-submit, register-error, pending-screen, pending-telegram, pending-refresh, pending-logout, home-screen, home-available-rail, orders-screen, order-card-{id}, order-detail-screen, order-track-button, basket-screen, proceed-checkout-button, account-screen, account-member-card, account-logout, tab-home/tab-shop/tab-search/tab-orders/tab-account. Pending → tabs guard works for /, /orders, /account by redirecting to /pending; signed-out → /orders redirects to /login.",
+  "rca_of_issue": "No functional defects found. All review-request features behave as specified. The two carried-over warnings from iteration 1 (RN-Web pointerEvents prop deprecation and nested <button> hydration warning on the home ProductRail) remain but are cosmetic web-only; they do not affect any flow or native builds."
+}

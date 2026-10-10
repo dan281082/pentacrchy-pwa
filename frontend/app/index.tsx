@@ -8,6 +8,7 @@ import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
 import { catalogue } from "@/src/api/catalogue";
 import { Button } from "@/src/components/ui/Button";
 import { env } from "@/src/config/env";
+import { useAuth } from "@/src/context/auth";
 import { useNetwork } from "@/src/context/network";
 import { qk } from "@/src/hooks/use-catalogue";
 import { useBasketStore } from "@/src/store/basket-store";
@@ -32,15 +33,16 @@ export default function Splash() {
   const router = useRouter();
   const queryClient = useQueryClient();
   const { isOnline } = useNetwork();
+  const { status } = useAuth();
   const [failed, setFailed] = useState(false);
+  const [storesReady, setStoresReady] = useState(false);
   const startedAt = useRef(Date.now());
 
   const bootstrap = useCallback(async () => {
     setFailed(false);
     startedAt.current = Date.now();
     try {
-      // 1) Restore persisted basket + favourites (secure session restore lands
-      //    with the Apeps App Connector in Phase 2).
+      // 1) Restore persisted basket + favourites.
       await Promise.all([
         waitForHydration(useBasketStore),
         waitForHydration(useFavouritesStore),
@@ -55,15 +57,23 @@ export default function Splash() {
       const elapsed = Date.now() - startedAt.current;
       if (elapsed < MIN_SPLASH_MS) await new Promise((r) => setTimeout(r, MIN_SPLASH_MS - elapsed));
 
-      router.replace("/(tabs)");
+      setStoresReady(true);
     } catch {
       setFailed(true);
     }
-  }, [queryClient, router]);
+  }, [queryClient]);
 
   useEffect(() => {
     bootstrap();
   }, [bootstrap]);
+
+  // Route once both local stores AND the auth session have resolved.
+  useEffect(() => {
+    if (!storesReady || status === "loading") return;
+    if (status === "ready") router.replace("/(tabs)");
+    else if (status === "pending") router.replace("/pending");
+    else router.replace("/(auth)/login");
+  }, [storesReady, status, router]);
 
   return (
     <View style={styles.container} testID="splash-screen">

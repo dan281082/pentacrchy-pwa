@@ -101,3 +101,121 @@
 #====================================================================================================
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
+
+user_problem_statement: >
+  Private leftover-vial storefront for members of an existing Telegram group-buy community.
+  Not a group-buy platform. Surplus stock from group buys is sold here as individual units while
+  stock lasts, with WooCommerce as the source of truth. Customer flow: Register → Telegram username
+  captured → account approval → Available Vials → Basket → Checkout → Payment → My Orders → Tracking.
+  Keep proven auth/basket/checkout/orders/tracking/security architecture. Do NOT add group-buy mgmt,
+  pledges, deadlines, min-buy, loyalty, affiliates, coupons or trade accounts. Build against mock data
+  (staging API is blocked by SiteGround WAF).
+
+frontend:
+  - task: "Member registration with required Telegram username + auto-approval"
+    implemented: true
+    working: "NA"
+    file: "app/(auth)/register.tsx, src/api/auth/mock.ts, src/utils/telegram.ts"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        -working: "NA"
+        -agent: "main"
+        -comment: "Register screen validates first name, email, Telegram (required, 5-32 a-z/0-9/_), password>=8. Valid Telegram auto-approves and routes to tabs. Duplicate email/telegram rejected."
+  - task: "Login + session restore + approval gating state machine"
+    implemented: true
+    working: true
+    file: "src/context/auth.tsx, app/(auth)/login.tsx, app/index.tsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        -working: true
+        -agent: "main"
+        -comment: "Smoke-tested via screenshot: login as demo@apeps.co.uk (approved) routes to home. Pending account should route to lock screen. Guards in (tabs)/_layout, (auth)/_layout, pending.tsx."
+  - task: "Pending approval lock screen"
+    implemented: true
+    working: "NA"
+    file: "app/pending.tsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        -working: "NA"
+        -agent: "main"
+        -comment: "Login as pending@apeps.co.uk/Password123 should show lock screen with Telegram handle, Check approval status, and Sign out. Tabs must not be reachable."
+  - task: "My Orders list + order detail with tracking timeline"
+    implemented: true
+    working: "NA"
+    file: "app/(tabs)/orders.tsx, app/order/[id].tsx, src/api/orders/mock.ts, src/hooks/use-orders.ts"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        -working: "NA"
+        -agent: "main"
+        -comment: "Orders tab lists 3 mock orders with status pills; tapping opens detail with items + tracking timeline (Royal Mail) and Track button."
+  - task: "Basket without coupons + secure website checkout"
+    implemented: true
+    working: "NA"
+    file: "app/basket.tsx, src/store/basket-store.ts"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: true
+    status_history:
+        -working: "NA"
+        -agent: "main"
+        -comment: "Coupon UI/store fully removed. Checkout button opens website /checkout (fallback). Stock limit respected via QuantityStepper max=lowStockRemaining."
+  - task: "Shop renamed to Available Vials; Home simplified; modules trimmed to Live tracking"
+    implemented: true
+    working: true
+    file: "app/(tabs)/_layout.tsx, app/(tabs)/shop.tsx, app/(tabs)/index.tsx, src/modules/registry.ts, src/config/feature-flags.ts"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: true
+    status_history:
+        -working: true
+        -agent: "main"
+        -comment: "Smoke-tested: Vials tab + 'Available now' rail render. Loyalty/referral/refill/reward/qr/etc modules removed; only live-tracking remains (not surfaced as a hub)."
+  - task: "Account screen real member profile + sign out"
+    implemented: true
+    working: "NA"
+    file: "app/(tabs)/account.tsx"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: true
+    status_history:
+        -working: "NA"
+        -agent: "main"
+        -comment: "Shows member name/email/Telegram + Approved badge. Sign out returns to login. Ecosystem module block removed."
+
+metadata:
+  created_by: "main_agent"
+  version: "1.1"
+  test_sequence: 1
+  run_ui: true
+
+test_plan:
+  current_focus:
+    - "Member registration with required Telegram username + auto-approval"
+    - "Pending approval lock screen"
+    - "My Orders list + order detail with tracking timeline"
+    - "Login + session restore + approval gating state machine"
+  stuck_tasks: []
+  test_all: false
+  test_priority: "high_first"
+
+agent_communication:
+    -agent: "main"
+    -message: >
+      Repositioned the app to a private members' leftover-vial storefront and built the full auth +
+      approval flow against MOCK data (live staging API is blocked by SiteGround WAF; do not attempt
+      live calls). Please test FRONTEND ONLY. Seeded mock accounts (auto-created on first launch):
+      approved = demo@apeps.co.uk / Password123 ; pending = pending@apeps.co.uk / Password123.
+      Focus: (1) Register with a valid Telegram username -> auto-approved -> lands on tabs; invalid/empty
+      Telegram shows field error; duplicate email/telegram rejected. (2) Login as pending account -> shows
+      "Pending approval" lock screen, tabs NOT reachable, Sign out works. (3) Login as approved -> tabs;
+      My Orders lists orders, order detail shows tracking timeline. (4) Basket has NO coupon field; checkout
+      button present. (5) Account shows Telegram + Approved badge; Sign out returns to login. Backend (WP PHP
+      plugin) cannot be tested in this environment.

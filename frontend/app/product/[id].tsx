@@ -228,7 +228,7 @@ export default function ProductScreen() {
           {!product.soldIndividually && (
             <View style={styles.qtyBlock}>
               <Text style={styles.variationLabel}>Quantity</Text>
-              <QuantityStepper value={quantity} onChange={setQuantity} min={1} testID="product-qty" />
+              <QuantityStepper value={quantity} onChange={setQuantity} min={1} max={product.lowStockRemaining ?? null} testID="product-qty" />
             </View>
           )}
 

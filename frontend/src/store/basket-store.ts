@@ -27,7 +27,6 @@ export interface BasketLine {
 
 interface BasketState {
   lines: BasketLine[];
-  couponCode: string | null;
   addItem: (
     product: Product,
     quantity: number,
@@ -38,7 +37,6 @@ interface BasketState {
   decrement: (key: string) => void;
   remove: (key: string) => void;
   clear: () => void;
-  setCoupon: (code: string | null) => void;
 }
 
 const lineKey = (productId: number, variationId: number | null) =>
@@ -51,7 +49,6 @@ export const useBasketStore = create<BasketState>()(
   persist(
     (set) => ({
       lines: [],
-      couponCode: null,
 
       addItem: (product, quantity, variation) =>
         set((state) => {
@@ -106,13 +103,12 @@ export const useBasketStore = create<BasketState>()(
         })),
 
       remove: (key) => set((state) => ({ lines: state.lines.filter((l) => l.key !== key) })),
-      clear: () => set({ lines: [], couponCode: null }),
-      setCoupon: (code) => set({ couponCode: code }),
+      clear: () => set({ lines: [] }),
     }),
     {
       name: "apeps.basket.v1",
       storage: createJSONStorage(() => zustandStorage),
-      partialize: (s) => ({ lines: s.lines, couponCode: s.couponCode }),
+      partialize: (s) => ({ lines: s.lines }),
     },
   ),
 );

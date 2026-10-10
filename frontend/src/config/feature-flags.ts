@@ -13,17 +13,7 @@ const envForced = (process.env.EXPO_PUBLIC_FLAGS ?? "")
 
 // Baseline flags. Future modules default OFF until their build lands.
 const DEFAULT_FLAGS: Record<string, boolean> = {
-  "loyalty-dashboard": false,
-  "reward-levels": false,
-  "referral": false,
-  "refill-club": false,
-  "qr-authenticity": false,
-  "product-verification": false,
   "live-tracking": false,
-  "notification-centre": false,
-  "security-centre": false,
-  "educational-library": false,
-  "ai-support": false,
 };
 
 // Remote overrides can be merged in at runtime (Phase 2) via setRemoteFlags().

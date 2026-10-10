@@ -1,0 +1,195 @@
+<analysis>**original_problem_statement**: 
+Build a production-ready, mobile-first Android shopping app for Apeps Supplies using Expo and React Native. The app must connect securely to an existing WooCommerce store, which remains the single source of truth for products, stock, prices, orders, and customer accounts. The app should include a 5-tab bottom navigation (Home, Shop, Search, Orders, Account), handle a dark/premium visual theme, and lay the groundwork for future ecosystem modules.
+
+**PRODUCT REQUIREMENTS**:
+- Expo + React Native + TypeScript + TanStack Query + Zustand.
+- Custom PHP WordPress Plugin (Apeps App Connector) for backend logic.
+- 5 primary tabs: Home, Shop, Search, Orders, Account.
+- Phase 1: Read-only catalogue journey with mocked cart/favourites (Completed).
+- Phase 2: Login -> Cart -> Coupons -> Shipping -> Web Checkout Fallback -> Order History (Pending).
+- Keep production completely untouched during testing. Use specific staging environment ().
+
+**User's preferred language**: English
+(INSTRUCT NEXT AGENT: Respond in English only)
+
+**what currently exists?** 
+A functional, native Expo React Native app covering the Phase 1 catalogue journey. The Apeps App Connector WordPress plugin (v1.1.0) has been fully written, linted, packaged into a ZIP, and provided to the user (located in ). The user has successfully installed the plugin and added the JWT secret to their staging environment. However, the staging environment is currently blocking automated access via SiteGround's WAF (sg-captcha).
+
+**Last working item**: 
+    - Last item agent was working: Running pre-flight  environment checks against  endpoints to verify API access before starting Phase 2 development.
+    - Status: BLOCKED (Waiting for user to whitelist the container's egress IP in SiteGround).
+    - Agent Testing Done: Y
+    - Which testing method agent to use?: manual testing by curl
+    - User Testing Done: N
+
+**All Pending/In progress Issue list**:
+  - Issue 1: SiteGround WAF blocking staging REST API paths.
+     - Attempted fixes: User attempted path exclusions, but requests from the container are still intercepted with an HTTP 202 . Agent provided the container's egress IP to the user for whitelisting.
+     - Next debug checklist: Re-run HTTP/2 202 
+server: nginx
+date: Sat, 10 Oct 2026 07:36:35 GMT
+content-type: text/html
+content-length: 217
+sg-captcha: challenge
+x-robots-tag: noindex
+set-cookie: nevercache-b39818=Y;Max-Age=-1
+expires: Thu, 01 Jan 1970 00:00:01 GMT
+cache-control: no-store,no-cache,max-age=0
+host-header: 8441280b0c35cbc1147f8ba998a563a7
+x-proxy-cache-info: DT:1
+ and HTTP/2 202 
+server: nginx
+date: Sat, 10 Oct 2026 07:36:35 GMT
+content-type: text/html
+content-length: 196
+sg-captcha: challenge
+x-robots-tag: noindex
+set-cookie: nevercache-b39818=Y;Max-Age=-1
+expires: Thu, 01 Jan 1970 00:00:01 GMT
+cache-control: no-store,no-cache,max-age=0
+host-header: 8441280b0c35cbc1147f8ba998a563a7
+x-proxy-cache-info: DT:1
+ to confirm 200 JSON responses.
+     - Why fix this issue and what will be achieved with the fix?: Required to access live staging data so Phase 2 end-to-end development can begin.
+     - Status: BLOCKED (Waiting for user manual fix).
+     - Is recurring issue? Y (Happened across forks/attempts).
+     - Should Test frontend/backend/both after fix?: Both (using  first, then app integration).
+     - Blocked on other issue: NA.
+
+**In progress Task List**:
+  - Task 1: Phase 2 First End-to-End Slice
+     - Where to resume: ONCE USER CONFIRMS IP WHITELIST IS READY, re-run  environment verification. IF successful (HTTP 200), begin implementation: Customer Login → Session Restore → WooCommerce Cart → Coupons → Shipping → Secure Website Checkout Fallback → Order History.
+     - What will be achieved with this?: First functional authenticated user journey on staging.
+     - Status: BLOCKED (Paused per strict user instruction).
+     - Should Test frontend/backend/both after fix?: Both (Testing agent required for the slice).
+     - Blocked on something: User manually whitelisting the container IP in SiteGround WAF.
+
+**Upcoming and Future Tasks**
+  - Upcoming Tasks:
+    - P1: Loyalty dashboard integration (requires mapping to existing WC plugin).
+    - P1: Live order tracking integration.
+    - P1: Notification centre integration (Firebase Cloud Messaging).
+    - P1: Refill preferences integration.
+  - Future Tasks:
+    - P2: QR code authenticity checker module.
+    - P2: Product verification module.
+    - P2: Referral programme module.
+    - P2: Educational library module.
+    - P2: AI support assistant module.
+    - P2: Owner/Admin dashboard (Must be entirely separate authentication/application).
+    - P3: iOS App release.
+
+**Completed work in this session**
+- Built out the missing 11 PHP files for the Apeps App Connector WP Plugin.
+- Refactored the WP Plugin into a clean, modular structure () including , , , , etc.
+- Linted all PHP files to ensure no syntax errors.
+- Packaged the plugin into .
+- Moved the plugin source and zip file to  as the user's project view could not sync the  folder.
+- Executed API reachability checks via  against staging (Blocked by WAF).
+
+**Earlier issues found/mentioned but not fixed**
+  - None (All plugin creation requests were fulfilled).
+
+**Known issue recurrence from previous fork**
+  - Issue recurrence in previous fork: SiteGround sg-captcha 202 block on REST API paths.
+  - Recurrence count: 2
+  - Status: BLOCKED
+
+**Code Architecture**
+
+*(Note: No backend server exists in this project other than the external WordPress site. Do not introduce FastAPI or MongoDB.)*
+
+**Key Technical Concepts**
+Frontend: React Native, Expo, Expo Router, Zustand (persisted), TanStack Query, React Hook Form, Zod. Feature-flag-driven modular architecture.
+Backend: Mock data facade currently active. Target backend is WordPress/WooCommerce Store API + Custom PHP Plugin.
+
+**key DB schema**
+  - No direct DB connection. Relies entirely on WordPress/WooCommerce REST APIs and local SecureStore.
+
+**changes in tech stack**
+  - None. Sticking strictly to Expo + PHP plugin.
+
+**All files of reference**
+  1.  (The full source of the custom WordPress plugin built for the user).
+  2.  (Crucial integration steps and security rules).
+  3.  (Environment management).
+
+**Areas that need refactoring**:
+  - None at the moment. Architecture is cleanly separated.
+
+**key api endpoints**
+  -  (WooCommerce Core)
+  -  (Custom Plugin)
+
+**Critical Info for New Agent**
+  - **STOP AND WAIT**: The user has explicitly instructed to halt all code writing for Phase 2 until they fix the WAF blocker. You must check the next user message to see if they have whitelisted the IP.
+  - Before writing ANY React Native code for Phase 2, you MUST run the  commands (listed in the debug checklist) and confirm they return  JSON data. If they return , stop and inform the user again.
+  - **DO NOT TOUCH PRODUCTION ()**. All development and testing must happen against .
+  - The custom WordPress plugin has already been written, zipped, and delivered to the user in . Do not rewrite it unless specifically asked.
+
+**documents and test reports created in this job**
+  - 
+  - 
+
+**Last 10 User Messages and any pending HUMAN messages** 
+ - User requested the agent to pause Phase 2 while they manually configured WAF exclusions and installed the plugin. (COMPLETED)
+ - User stated they could not find the WP plugin zip file. (COMPLETED)
+ - Agent generated the 14-file plugin, zipped it, but placed it in .
+ - User still could not see it and requested it be placed in . (COMPLETED)
+ - Agent moved the uncompressed files and the  to .
+ - User confirmed installation of the plugin and adding the JWT secret, and instructed the agent to re-run  checks on staging endpoints and STOP if it fails. (COMPLETED)
+ - Agent ran  checks, which still failed with a 202 , reported the failure, and halted further work. **(PENDING HUMAN ACTION: User needs to whitelist container egress IP in SiteGround).**
+
+**Project Health Check:**
+  - Broken: Staging API connection from build container (Blocked by SiteGround WAF - User resolving).
+  - Mocked: Web preview Catalogue Data, Customer Auth, Ecosystem Modules.
+
+**3rd Party Integrations**
+  - WooCommerce Store API (Requires User environment setup).
+  - Firebase Cloud Messaging (Planned for later Phase 2).
+
+**Testing status**
+  - Testing agent used after significant changes: NO (No new app code was written this session, only plugin files delivered).
+  - Troubleshoot agent used after agent stuck in loop: NO
+  - Test files created: N/A
+  - Known regressions: None.
+
+**Credentials to test flow:**
+  - Staging login credentials will be provided by user once WAF block is cleared.
+
+**What agent forgot to execute**
+  - Nothing. Agent strictly followed user instructions to stop upon failure.
+
+**Debugging checklist for current issue**
+    Issue: Staging API requests return HTTP 202 
+    Frontend files to check: N/A (Server/Infra level block)
+    Backend files to check: N/A
+    Database to check: N/A
+    Command to verify fix (RUN THIS FIRST): 
+    HTTP/2 202 
+server: nginx
+date: Sat, 10 Oct 2026 07:36:36 GMT
+content-type: text/html
+content-length: 217
+sg-captcha: challenge
+x-robots-tag: noindex
+set-cookie: nevercache-b39818=Y;Max-Age=-1
+expires: Thu, 01 Jan 1970 00:00:01 GMT
+cache-control: no-store,no-cache,max-age=0
+host-header: 8441280b0c35cbc1147f8ba998a563a7
+x-proxy-cache-info: DT:1
+
+HTTP/2 202 
+server: nginx
+date: Sat, 10 Oct 2026 07:36:36 GMT
+content-type: text/html
+content-length: 196
+sg-captcha: challenge
+x-robots-tag: noindex
+set-cookie: nevercache-b39818=Y;Max-Age=-1
+expires: Thu, 01 Jan 1970 00:00:01 GMT
+cache-control: no-store,no-cache,max-age=0
+host-header: 8441280b0c35cbc1147f8ba998a563a7
+x-proxy-cache-info: DT:1
+
+    Wait for the user's message before proceeding.</analysis>

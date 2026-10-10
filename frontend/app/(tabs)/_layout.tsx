@@ -1,7 +1,8 @@
-import { Tabs } from "expo-router";
+import { Redirect, Tabs } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { Platform } from "react-native";
 
+import { useAuth } from "@/src/context/auth";
 import { colors, fontSize, fontWeight } from "@/src/theme";
 
 const icon =
@@ -10,6 +11,13 @@ const icon =
     <Ionicons name={focused ? filled : outline} size={size} color={color} />;
 
 export default function TabsLayout() {
+  const { status } = useAuth();
+
+  // Only approved members reach the tabs; everyone else is routed out.
+  if (status === "loading") return null;
+  if (status === "signedOut") return <Redirect href="/(auth)/login" />;
+  if (status === "pending") return <Redirect href="/pending" />;
+
   return (
     <Tabs
       screenOptions={{
@@ -34,7 +42,7 @@ export default function TabsLayout() {
       />
       <Tabs.Screen
         name="shop"
-        options={{ title: "Shop", tabBarIcon: icon("grid-outline", "grid"), tabBarButtonTestID: "tab-shop" }}
+        options={{ title: "Vials", tabBarIcon: icon("flask-outline", "flask"), tabBarButtonTestID: "tab-shop" }}
       />
       <Tabs.Screen
         name="search"

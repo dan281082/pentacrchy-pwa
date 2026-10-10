@@ -6,6 +6,7 @@ import { LogBox } from "react-native";
 
 import { useIconFonts } from "@/src/hooks/use-icon-fonts";
 import { AppProviders } from "@/src/providers/app-providers";
+import { AuthProvider } from "@/src/context/auth";
 import { colors } from "@/src/theme";
 
 // Disable logbox errors etc so that users can see the app
@@ -33,15 +34,20 @@ export default function RootLayout() {
 
   return (
     <AppProviders>
-      <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.surface } }}>
-        <Stack.Screen name="index" />
-        <Stack.Screen name="(tabs)" />
-        <Stack.Screen name="product/[id]" />
-        <Stack.Screen name="category/[id]" />
-        <Stack.Screen name="favourites" />
-        <Stack.Screen name="basket" options={{ presentation: "card" }} />
-        <Stack.Screen name="module/[id]" />
-      </Stack>
+      <AuthProvider>
+        <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.surface } }}>
+          <Stack.Screen name="index" />
+          <Stack.Screen name="(auth)" />
+          <Stack.Screen name="pending" />
+          <Stack.Screen name="(tabs)" />
+          <Stack.Screen name="product/[id]" />
+          <Stack.Screen name="category/[id]" />
+          <Stack.Screen name="order/[id]" />
+          <Stack.Screen name="favourites" />
+          <Stack.Screen name="basket" options={{ presentation: "card" }} />
+          <Stack.Screen name="module/[id]" />
+        </Stack>
+      </AuthProvider>
     </AppProviders>
   );
 }
