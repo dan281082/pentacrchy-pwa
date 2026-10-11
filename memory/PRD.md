@@ -146,3 +146,9 @@ overpaid/failed/cancelled; `complete` → gateway `payment_complete()` → WooCo
   - WC order-screen metabox: view/download + Mark dispatched (cap-checked, nonce)
 - App: Provide Shipping Label section on order detail; staff Fulfilment tab (hidden unless user.fulfilment) + /fulfilment/[id]; checkout shows postage info instead of shipping price.
 - STATUS: v2.1.0 INSTALLED live. Full E2E verified (iteration_7): customer upload/replace/lock, staff ready/dispatch, isolation, validation. Proxy adds _nc cache-buster on authenticated GETs (SiteGround cache). Updated zip (adds no-cache headers on all glp/v1 responses) awaiting optional re-upload. Test order 263 now dispatched.
+
+## Update — Customer email investigation (connector v2.1.4 live)
+- Root cause: NOT the connector/trigger. WooCommerce fires "Processing order" automatically on payment_complete (pending→processing) and "Completed order" on dispatch; verified via staff-only diagnostics (GET /api/glp/fulfilment/debug/emails?order=ID).
+- Delivery failed because WP used PHP mail() with From = dan281082@googlemail.com (Gmail DMARC rejects). User set WooCommerce From address to support@ap3p-fitness.com (confirmed live, order #275). From name / Site Title still "My WordPress" (user to change to "Pentarchy Vial").
+- v2.1.1+ includes email safety net (sends standard WC email once if WC did not). v2.1.2+ diagnostics (event ring buffer, transport, settings snapshot).
+- Optional: WP Mail SMTP with support@ap3p-fitness.com for authenticated sending.

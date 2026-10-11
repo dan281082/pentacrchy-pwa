@@ -297,6 +297,11 @@ async def glp_fulfil_label(order_id: int, authorization: Optional[str] = Header(
     return await _forward("GET", f"/fulfilment/orders/{order_id}/label", token=_token_from_auth(authorization))
 
 
+@glp_router.get("/fulfilment/debug/emails")
+async def glp_fulfil_debug_emails(order: int = 0, authorization: Optional[str] = Header(None)):
+    return await _forward("GET", "/fulfilment/debug/emails", token=_token_from_auth(authorization), params={"order": order})
+
+
 @glp_router.post("/fulfilment/orders/{order_id}/ready")
 async def glp_fulfil_ready(order_id: int, authorization: Optional[str] = Header(None)):
     return await _forward("POST", f"/fulfilment/orders/{order_id}/ready", token=_token_from_auth(authorization), json_body={})
