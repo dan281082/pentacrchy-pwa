@@ -95,7 +95,7 @@ export default function HomeScreen() {
             </View>
             <View style={{ flex: 1 }}>
               <Text style={styles.supportTitle}>Need a hand?</Text>
-              <Text style={styles.supportSub}>Contact Apeps customer support</Text>
+              <Text style={styles.supportSub}>Contact Pentarchy support</Text>
             </View>
             <Ionicons name="chevron-forward" size={20} color={colors.onSurfaceTertiary} />
           </Pressable>

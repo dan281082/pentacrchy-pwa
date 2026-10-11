@@ -11,7 +11,7 @@ const icon =
     <Ionicons name={focused ? filled : outline} size={size} color={color} />;
 
 export default function TabsLayout() {
-  const { status } = useAuth();
+  const { status, user } = useAuth();
 
   // Only approved members reach the tabs; everyone else is routed out.
   if (status === "loading") return null;
@@ -51,6 +51,15 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="orders"
         options={{ title: "Orders", tabBarIcon: icon("receipt-outline", "receipt"), tabBarButtonTestID: "tab-orders" }}
+      />
+      <Tabs.Screen
+        name="fulfilment"
+        options={{
+          title: "Fulfilment",
+          href: user?.fulfilment ? undefined : null,
+          tabBarIcon: icon("cube-outline", "cube"),
+          tabBarButtonTestID: "tab-fulfilment",
+        }}
       />
       <Tabs.Screen
         name="account"

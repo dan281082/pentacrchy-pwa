@@ -49,7 +49,10 @@ function OrderCard({ order, onPress }: { order: Order; onPress: () => void }) {
     >
       <View style={styles.cardHeader}>
         <View>
-          <Text style={styles.cardNumber}>{order.number}</Text>
+          <Text style={styles.cardNumber}>#{order.number}</Text>
+          {!!order.fulfilment && order.status === "processing" && (
+            <Text style={styles.cardDate} testID={`order-fulfil-state-${order.id}`}>{order.fulfilment.stateLabel}</Text>
+          )}
           <Text style={styles.cardDate}>{formatDate(order.dateCreated)}</Text>
         </View>
         <View style={[styles.statusPill, { backgroundColor: STATUS_COLOR[order.status] }]}>
@@ -78,7 +81,7 @@ function OrderCard({ order, onPress }: { order: Order; onPress: () => void }) {
         <Text style={styles.cardTotal}>{order.total}</Text>
         <View style={styles.cardLink}>
           <Text style={styles.cardLinkText}>
-            {order.tracking ? "Track order" : "View details"}
+            {order.fulfilment?.canUpload && !order.fulfilment.label ? "Provide shipping label" : "View details"}
           </Text>
           <Ionicons name="chevron-forward" size={16} color={colors.brandSecondary} />
         </View>

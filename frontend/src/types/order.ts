@@ -1,6 +1,6 @@
 // ── Orders domain model ──────────────────────────────────────────────────────
-// Ownership-scoped order history + shipment tracking. The app formats WooCommerce
-// values verbatim and never invents amounts, dates or tracking events.
+// Ownership-scoped order history + customer-supplied postage label. The app
+// formats WooCommerce values verbatim and never invents amounts or dates.
 
 export type OrderStatus =
   | "pending"
@@ -19,18 +19,29 @@ export interface OrderLine {
   image: string | null;
 }
 
-export interface TrackingEvent {
-  label: string;
-  date: string | null;
-  done: boolean;
+export type LabelKind = "label" | "qr";
+
+export interface OrderLabel {
+  kind: LabelKind;
+  mime: string; // application/pdf | image/jpeg | image/png
+  filename: string;
+  size: number;
+  uploadedAt: string;
 }
 
-export interface OrderTracking {
-  carrier: string;
-  number: string;
-  url: string;
-  status: string;
-  events: TrackingEvent[];
+/** Label file content (base64) fetched from an authenticated endpoint. */
+export interface LabelFile extends OrderLabel {
+  data: string;
+}
+
+export type FulfilmentState = "awaiting_label" | "label_supplied" | "ready" | "dispatched";
+
+export interface OrderFulfilment {
+  state: FulfilmentState;
+  stateLabel: string;
+  label: OrderLabel | null;
+  canUpload: boolean;
+  dispatchedAt: string | null;
 }
 
 export interface Order {
@@ -41,5 +52,5 @@ export interface Order {
   total: string; // formatted
   itemCount: number;
   lines: OrderLine[];
-  tracking: OrderTracking | null;
+  fulfilment: OrderFulfilment | null; // null for orders not placed in the app
 }

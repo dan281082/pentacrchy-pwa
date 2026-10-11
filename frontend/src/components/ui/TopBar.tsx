@@ -7,11 +7,11 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useBasketStore, selectItemCount } from "@/src/store/basket-store";
 import { colors, spacing, fontSize, fontWeight, radius } from "@/src/theme";
 
-// Apeps wordmark — swap for the real logo asset when supplied (single place).
+// Pentarchy wordmark — swap for the real logo asset when supplied (single place).
 function Wordmark() {
   return (
-    <View style={styles.wordmark} accessibilityRole="header" accessibilityLabel="Apeps Supplies">
-      <Text style={styles.wordmarkText}>APEPS</Text>
+    <View style={styles.wordmark} accessibilityRole="header" accessibilityLabel="Pentarchy">
+      <Text style={styles.wordmarkText}>PENTARCHY</Text>
       <View style={styles.dot} />
     </View>
   );

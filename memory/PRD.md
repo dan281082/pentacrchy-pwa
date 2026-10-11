@@ -92,7 +92,25 @@ payment_method:'crypto', network, shipping_address, shipping_method(rate id), cl
 statuses awaiting_payment→payment_detected→confirming→complete, plus expired/partially_paid/underpaid/
 overpaid/failed/cancelled; `complete` → gateway `payment_complete()` → WooCommerce Processing.
 
-### Connectivity — RESOLVED (2026-10-10)
+### LIVE storefront integration — COMPLETE + E2E VERIFIED (2026-10-11)
+- App switched to `EXPO_PUBLIC_DATA_SOURCE=glp`; all data via the FastAPI proxy `/api/glp/*` →
+  GLP connector on **ap3p-fitness.com** (secret server-side; Crypto Test Mode ON).
+- Frontend GLP layer: `src/api/glp/{client,auth,catalogue,orders,checkout}.ts`; facades
+  (auth/catalogue/orders) switch on `glp`; auth context syncs the bearer token into `glpClient`.
+- New in-app checkout (no website redirect): `app/checkout.tsx` (address + live shipping quote +
+  order summary + place order) and `app/checkout/invoice/[id].tsx` (USDT/TRON invoice — amount,
+  copyable address, QR via react-native-qrcode-svg, countdown, confirmations, recheck, live polling →
+  'Payment received'). Basket CTA now routes to /checkout. Coupons removed.
+- Server-side stock re-validation enforced by the connector (409 basket_invalid) before order creation.
+- Testing agent (iteration 5): full journey PASS — register→auto-approve→real vials→variable product
+  →basket→£6 shipping→**order #259 placed**→crypto invoice→Test Mode auto-complete→'Payment received'→
+  Orders. No backend 5xx. Note: in Test Mode the invoice jumps straight to `complete`, so the pre-payment
+  QR/countdown UI flashes briefly before the paid screen (expected; shows fully in live/non-test mode).
+- Minor web-only: nested Pressable (FavouriteButton inside rail card) hydration warning — cosmetic, web
+  preview only, not on native.
+- Housekeeping: test customers + orders (#253/#257/#259) created on ap3p-fitness.com during verification.
+
+### (earlier) Connectivity — RESOLVED (2026-10-10)
 - Backend host is **`https://ap3p-fitness.com`** (hosts `glp/v1` + crypto routes), NOT staging2.apeps.co.uk
   (staging2 only runs legacy apeps/v1+apeps/v2). `GLP_BASE_URL` updated accordingly.
 - SiteGround AntiBot 202/sg-captcha fixed by using a non-browser server UA **`AP3P-Storefront-API/1.0`**
@@ -114,3 +132,17 @@ overpaid/failed/cancelled; `complete` → gateway `payment_complete()` → WooCo
   status polling → success → My Orders). Then run the full live staging e2e test.
 
 
+
+## Update — Pentarchy fulfilment redesign (Oct 2026)
+- Branding: all visible UI now "Pentarchy" (internal ids/gateway names unchanged).
+- AST tracking work stopped. Customers supply their own postage label/QR.
+- Connector v2.1.0 (glp-app-connector.zip; backup glp-app-connector-2.0.0-backup.zip): new includes/fulfilment.php
+  - role glp_fulfilment + cap glp_fulfil_orders (also on administrator); fulfilment-only users blocked from wp-admin
+  - /me returns `fulfilment` bool
+  - £0 "Customer-supplied postage label" shipping rate for app orders only (filter glp_shipping_rates)
+  - customer: GET/POST /orders/{id}/label (owner-only, Processing & not dispatched, PDF/JPG/PNG ≤5MB, magic-byte validated; QR = image only)
+  - staff: GET /fulfilment/orders, GET /fulfilment/orders/{id}, GET .../label, POST .../ready, POST .../dispatch (→ WC Completed, label locked)
+  - private storage outside web root (fallback uploads/glp-labels with deny-all), never Media Library
+  - WC order-screen metabox: view/download + Mark dispatched (cap-checked, nonce)
+- App: Provide Shipping Label section on order detail; staff Fulfilment tab (hidden unless user.fulfilment) + /fulfilment/[id]; checkout shows postage info instead of shipping price.
+- STATUS: connector v2.1.0 NOT YET INSTALLED on ap3p-fitness.com — waiting for user. Live E2E testing pending.

@@ -1,5 +1,5 @@
-// Mock orders provider — realistic surplus-vial orders with shipment tracking so
-// the Orders tab and tracking timeline are exercised in preview. Mirrors the live
+// Mock orders provider — realistic surplus-vial orders so
+// the Orders tab is exercised in preview. Mirrors the live
 // connector contract (/me/orders, /me/orders/{id}).
 
 import type { Order } from "@/src/types/order";
@@ -32,19 +32,7 @@ const ORDERS: Order[] = [
         image: "https://images.unsplash.com/photo-1587854692152-cbe660dbde88?w=400&q=80",
       },
     ],
-    tracking: {
-      carrier: "Royal Mail",
-      number: "RM123456789GB",
-      url: "https://www.royalmail.com/track-your-item",
-      status: "Delivered",
-      events: [
-        { label: "Order confirmed", date: "2026-06-04T10:12:00Z", done: true },
-        { label: "Packed", date: "2026-06-04T15:40:00Z", done: true },
-        { label: "Dispatched", date: "2026-06-05T09:05:00Z", done: true },
-        { label: "Out for delivery", date: "2026-06-06T07:20:00Z", done: true },
-        { label: "Delivered", date: "2026-06-06T13:48:00Z", done: true },
-      ],
-    },
+    fulfilment: null,
   },
   {
     id: 10251,
@@ -62,19 +50,7 @@ const ORDERS: Order[] = [
         image: "https://images.unsplash.com/photo-1631549916768-4119b2e5f926?w=400&q=80",
       },
     ],
-    tracking: {
-      carrier: "Royal Mail",
-      number: "RM987654321GB",
-      url: "https://www.royalmail.com/track-your-item",
-      status: "Dispatched",
-      events: [
-        { label: "Order confirmed", date: "2026-06-09T08:02:00Z", done: true },
-        { label: "Packed", date: "2026-06-09T16:10:00Z", done: true },
-        { label: "Dispatched", date: "2026-06-10T09:30:00Z", done: true },
-        { label: "Out for delivery", date: null, done: false },
-        { label: "Delivered", date: null, done: false },
-      ],
-    },
+    fulfilment: null,
   },
   {
     id: 10260,
@@ -92,7 +68,7 @@ const ORDERS: Order[] = [
         image: "https://images.unsplash.com/photo-1603398938378-e54eab446dde?w=400&q=80",
       },
     ],
-    tracking: null,
+    fulfilment: null,
   },
 ];
 

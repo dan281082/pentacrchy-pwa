@@ -84,7 +84,7 @@ export default function Splash() {
       />
       <View style={styles.center}>
         <View style={styles.wordmark}>
-          <Text style={styles.wordmarkText}>APEPS</Text>
+          <Text style={styles.wordmarkText}>PENTARCHY</Text>
           <View style={styles.dot} />
         </View>
         <Text style={styles.tagline}>{env.appName}</Text>

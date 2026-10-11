@@ -1,0 +1,49 @@
+{
+  "summary": "AST Live Order Tracking polish verified end-to-end against live GLP backend. Backend: /api/glp/auth/session (tracktest.ap3p@mailinator.com) returns token; /api/glp/orders returns order #260 (completed, total_display='&pound;6.10'); /api/glp/orders/260 returns tracking as an ARRAY with one AST shipment [{provider:'Royal Mail', tracking_number:'AB123456789GB', date_shipped:'2026-10-11', tracking_url:'https://www.royalmail.com/track-your-item/?trackNumber=AB123456789GB'}]. Frontend (Expo web preview, 390x844): login → Orders tab → order-card-260 renders '260 / 11 Oct 2026 / Completed / Track order' footer; tapping routes to /order/260 which renders testID order-detail-screen with a Tracking section containing order-shipment-0 (carrier 'Royal Mail', 'Dispatched 11 Oct 2026', tracking number 'AB123456789GB', 'Dispatched' pill), order-copy-tracking-0 pressable (fires Clipboard.setStringAsync — Playwright click did not throw, no crash observed), and order-track-button-0 'Track on carrier website' present + enabled. RefreshControl present on the ScrollView, no crash. 1 CRITICAL FRONTEND BUG: HTML entity '&pound;' is rendered VERBATIM on both the Orders list card and the Order detail summary ('&pound;6.10') and on the line item ('&pound;0.10'). This directly violates the review-request acceptance criterion 'Prices render as £ not &pound; entities on orders list and detail'. Backend returns the entity in order.total_display / items[].total_display / subtotal_display / shipping_display; frontend mapper (src/api/glp/orders.ts) passes it through verbatim without HTML-decoding. Fix is a one-liner in the mapper (replace &pound; with £ or use a tiny he-style decoder). React Native issues: (1) props.pointerEvents deprecation warning on every render (expo-router/react-native-web internal); (2) nested <button> hydration warning (carried over from iteration_5 — rail-card contains FavouriteButton). 4/4 pytest backend assertions ran: 3 passed, 1 intentionally failed to document the &pound; bug.",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {"endpoint": "GET /api/glp/orders/{id} and GET /api/glp/orders", "issue": "Upstream WP returns prices as HTML entity '&pound;6.10' in total_display / subtotal_display / shipping_display / items[].total_display. Proxy forwards verbatim. Not a proxy bug per se (we must not alter the GLP connector), but the frontend mapper must decode."}
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [
+      {"component": "Orders list card + Order detail summary / line item total", "issue": "Renders '&pound;6.10' / '&pound;0.10' as literal text instead of '£6.10' / '£0.10'. The order mapper src/api/glp/orders.ts assigns `total: String(o?.total_display ?? ...)` and `line.total: String(l?.total_display ?? ...)` without HTML-entity decoding, while the WP connector returns the £ sign as '&pound;'. Fix: decode HTML entities in mapOrder for Order.total and OrderLine.total (and anywhere else total_display is read). Minimal fix: `s.replace(/&pound;/g,'£').replace(/&amp;/g,'&')` or a 10-line decodeEntities helper. Note: Home/catalogue prices (£52.99 etc) are unaffected because they come from a different endpoint that already uses the £ glyph.", "testID": "order-card-260 / order-detail-screen / order-line-*", "priority": "HIGH"}
+    ],
+    "integration_issues": [],
+    "design_issues": [],
+    "react_native_issues": [
+      {"component": "react-native-web (global)", "issue": "Deprecation warning on every render: 'props.pointerEvents is deprecated. Use style.pointerEvents'. Comes from an internal component (likely TopBar/Pressable usage of pointerEvents prop). Reference: console output across all screens — grep the codebase for `pointerEvents=` and migrate to `style={{ pointerEvents: ... }}`."},
+      {"component": "ProductCard / FavouriteButton (home rail)", "issue": "Nested Pressable renders <button> inside <button>: 'In HTML, <button> cannot be a descendant of <button>. This will cause a hydration error.' Carried over from iteration_5. Reference: /app/frontend/src/components/product/ProductCard.tsx (FavouriteButton nested inside the rail-card Pressable)."}
+    ]
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_glp_tracking.py",
+    "/app/test_reports/pytest/pytest_glp_tracking.xml"
+  ],
+  "action_items": [
+    "HIGH: In /app/frontend/src/api/glp/orders.ts mapOrder/line mapping, decode HTML entities for `total` and `line.total` (and anywhere `*_display` is read). Smallest safe fix: `s.replace(/&pound;/g,'£').replace(/&amp;/g,'&')`. This resolves the stated acceptance criterion 'Prices render as £ not &pound; entities on orders list and detail'. After fix, the test test_order_total_is_pound_sign_not_entity should be relaxed to assert the FRONTEND-rendered total contains '£' (backend will still return the entity — that's by design, since we must not alter the GLP connector).",
+    "LOW: Replace `pointerEvents=` props with `style={{ pointerEvents: ... }}` to clear the react-native-web deprecation warning.",
+    "LOW: Hoist FavouriteButton out of the Pressable rail-card to clear the nested-button hydration warning (carryover from iteration_5)."
+  ],
+  "critical_code_review_comments": [
+    "src/api/glp/orders.ts mapTracking: correctly handles both ARRAY and single-object shapes; filters entries missing tracking_number/number; maps provider/carrier, tracking_number/number, tracking_url/url, date_shipped — matches the AST payload returned by the plugin.",
+    "app/order/[id].tsx ShipmentCard: uses setTimeout(1800ms) to revert copied icon — simple and works; Clipboard.setStringAsync wrapped in async handler. RefreshControl bound to query.isRefetching/refetch — correct pattern.",
+    "app/(tabs)/orders.tsx: card footer label logic `order.tracking.length > 0 || order.status === 'completed' ? 'Track order' : 'View details'` — matches the review requirement because the list endpoint has no tracking array (we rely on status==='completed').",
+    "glp_proxy.py: GET /api/glp/orders/{order_id} is a pure pass-through — nothing to change here. Correct per the 'do not alter the GLP connector' constraint."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_glp_tracking.py (new)",
+    "/app/test_reports/pytest/pytest_glp_tracking.xml (new)",
+    "/app/test_reports/iteration_6.json (new)"
+  ],
+  "success_rate": {
+    "backend": "100% (3/3 functional backend assertions passed; the 4th is a documented failing assertion that confirms the upstream '&pound;' entity flows through — intentional and consumed by the frontend fix)",
+    "frontend": "~90% — all 7 review flows functionally verified EXCEPT 'Prices render as £ not &pound; entities on orders list and detail' which fails due to missing entity decoding in the orders mapper."
+  },
+  "seed_data_creation": "No new data created on live backend. Used existing WP user id 15 (tracktest.ap3p@mailinator.com) and existing live order #260 which already had AST tracking (Royal Mail / AB123456789GB / 2026-10-11) set up before this run.",
+  "retest_needed": true,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "After the main agent patches the HTML entity decoding in /app/frontend/src/api/glp/orders.ts: (1) re-run Playwright flow Orders → order-card-260 → /order/260 and assert `body.innerText` contains '£6.10' and '£0.10' and does NOT contain '&pound;'. (2) The backend will keep returning '&pound;' in total_display — do not expect the proxy or WP plugin to change (constraint). (3) order-copy-tracking-0 clipboard write is best verified by inspecting the Ionicons glyph swap; icon font makes DOM assertion brittle — use `page.wait_for_timeout(600)` and screenshot the shipment card to visually confirm the checkmark state before it reverts after ~1.8s. (4) RefreshControl on web is a no-op visual but ScrollView must not throw — already verified. (5) Known-good live auth: tracktest.ap3p@mailinator.com / TrackTest2026! (do not create new accounts).",
+  "rca_of_issue": "Root cause of '&pound;' bug: the WP GLP connector formats prices with wc_price() which emits the currency symbol as the HTML entity '&pound;', then returns it as `total_display`. On home/catalogue screens the price string we display uses the raw numeric field (or a Store API that emits £ directly), so no entity appears. In the orders mapper (src/api/glp/orders.ts, lines 44 and 53) we take `total_display` verbatim via `String(...)` and pass it into <Text>. React Native <Text> does NOT decode HTML entities — it renders them literally. Fix: add a tiny decode in mapOrder/mapLine (minimum: replace '&pound;' with '£'; preferred: handle &amp;, &#163;, &#xA3;). Reproduction: login as tracktest.ap3p, open /orders — card shows '&pound;6.10'; open /order/260 — summary and line both show '&pound;'. Mitigation: single-file edit, zero backend changes required."
+}

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="4" time="4.431" timestamp="2026-10-11T08:02:08.530974+00:00" hostname="agent-env-efdef706-2d81-4e6e-90e9-46021c11e7fd"><testcase classname="tests.test_glp_tracking" name="test_login_returns_customer_and_token" time="1.738" /><testcase classname="tests.test_glp_tracking" name="test_orders_list_contains_260" time="0.820" /><testcase classname="tests.test_glp_tracking" name="test_order_detail_has_ast_tracking_array" time="0.748" /><testcase classname="tests.test_glp_tracking" name="test_order_total_is_pound_sign_not_entity" time="0.722"><failure message="AssertionError: total contains HTML entity: '&amp;pound;6.10'&#10;assert '&amp;pound;' not in '&amp;pound;6.10'&#10;  &#10;  '&amp;pound;' is contained here:&#10;    &amp;pound;6.10">backend/tests/test_glp_tracking.py:90: in test_order_total_is_pound_sign_not_entity
+    assert "&amp;pound;" not in total, f"total contains HTML entity: {total!r}"
+E   AssertionError: total contains HTML entity: '&amp;pound;6.10'
+E   assert '&amp;pound;' not in '&amp;pound;6.10'
+E     
+E     '&amp;pound;' is contained here:
+E       &amp;pound;6.10</failure></testcase></testsuite></testsuites>

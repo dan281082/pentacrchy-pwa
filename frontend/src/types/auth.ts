@@ -10,6 +10,8 @@ export interface AppUser {
   lastName: string;
   telegramUsername: string;
   approved: boolean;
+  /** Server-authoritative staff fulfilment permission (glp_fulfil_orders). */
+  fulfilment?: boolean;
 }
 
 export interface AuthSession {

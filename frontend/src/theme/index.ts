@@ -1,4 +1,4 @@
-// ── Apeps Supplies central theme ────────────────────────────────────────────
+// ── Pentarchy central theme ────────────────────────────────────────────
 // SINGLE SOURCE OF TRUTH for brand colour, spacing, radius, typography.
 // When the final Apeps logo + exact brand blue arrive, change ONLY this file
 // (and assets/images) — no component hard-codes colours.

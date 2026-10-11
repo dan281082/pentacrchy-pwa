@@ -256,3 +256,46 @@ async def glp_recheck(order_id: int, request: Request, authorization: Optional[s
 @glp_router.post("/orders/{order_id}/crypto-network")
 async def glp_change_network(order_id: int, request: Request, authorization: Optional[str] = Header(None)):
     return await _forward("POST", f"/orders/{order_id}/crypto-network", token=_token_from_auth(authorization), json_body=await _json(request))
+
+
+# ── Customer postage label (owner-scoped server-side) ─────────────────────────
+@glp_router.get("/orders/{order_id}/label")
+async def glp_label_get(order_id: int, authorization: Optional[str] = Header(None)):
+    return await _forward("GET", f"/orders/{order_id}/label", token=_token_from_auth(authorization))
+
+
+@glp_router.post("/orders/{order_id}/label")
+async def glp_label_upload(order_id: int, request: Request, authorization: Optional[str] = Header(None)):
+    body = await _json(request)
+    payload = {
+        "kind": body.get("kind", "label"),
+        "filename": body.get("filename", ""),
+        "data": body.get("data", ""),
+    }
+    return await _forward("POST", f"/orders/{order_id}/label", token=_token_from_auth(authorization), json_body=payload)
+
+
+# ── Staff fulfilment (glp_fulfil_orders capability enforced by WordPress) ─────
+@glp_router.get("/fulfilment/orders")
+async def glp_fulfil_list(state: str = "all", authorization: Optional[str] = Header(None)):
+    return await _forward("GET", "/fulfilment/orders", token=_token_from_auth(authorization), params={"state": state})
+
+
+@glp_router.get("/fulfilment/orders/{order_id}")
+async def glp_fulfil_detail(order_id: int, authorization: Optional[str] = Header(None)):
+    return await _forward("GET", f"/fulfilment/orders/{order_id}", token=_token_from_auth(authorization))
+
+
+@glp_router.get("/fulfilment/orders/{order_id}/label")
+async def glp_fulfil_label(order_id: int, authorization: Optional[str] = Header(None)):
+    return await _forward("GET", f"/fulfilment/orders/{order_id}/label", token=_token_from_auth(authorization))
+
+
+@glp_router.post("/fulfilment/orders/{order_id}/ready")
+async def glp_fulfil_ready(order_id: int, authorization: Optional[str] = Header(None)):
+    return await _forward("POST", f"/fulfilment/orders/{order_id}/ready", token=_token_from_auth(authorization), json_body={})
+
+
+@glp_router.post("/fulfilment/orders/{order_id}/dispatch")
+async def glp_fulfil_dispatch(order_id: int, authorization: Optional[str] = Header(None)):
+    return await _forward("POST", f"/fulfilment/orders/{order_id}/dispatch", token=_token_from_auth(authorization), json_body={})

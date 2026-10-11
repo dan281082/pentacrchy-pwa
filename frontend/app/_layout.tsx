@@ -43,6 +43,8 @@ export default function RootLayout() {
           <Stack.Screen name="product/[id]" />
           <Stack.Screen name="category/[id]" />
           <Stack.Screen name="order/[id]" />
+          <Stack.Screen name="checkout" />
+          <Stack.Screen name="checkout/invoice/[id]" />
           <Stack.Screen name="favourites" />
           <Stack.Screen name="basket" options={{ presentation: "card" }} />
           <Stack.Screen name="module/[id]" />

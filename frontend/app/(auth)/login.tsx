@@ -59,7 +59,7 @@ export default function LoginScreen() {
           ]}
         >
           <View style={styles.brand}>
-            <Text style={styles.wordmark}>APEPS</Text>
+            <Text style={styles.wordmark}>PENTARCHY</Text>
             <View style={styles.dot} />
           </View>
           <Text style={styles.title}>Members sign in</Text>

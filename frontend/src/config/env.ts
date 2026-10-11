@@ -7,22 +7,26 @@
 // DATA_SOURCE switches the catalogue layer between realistic local mock data
 // and the live read-only WooCommerce Store API — no code changes required.
 
-export type DataSource = "mock" | "live";
+export type DataSource = "mock" | "live" | "glp";
 
 const str = (v: string | undefined, fallback: string): string =>
   v && v.trim().length > 0 ? v.trim() : fallback;
 
 export const env = {
-  appName: str(process.env.EXPO_PUBLIC_APP_NAME, "Apeps Supplies"),
+  appName: str(process.env.EXPO_PUBLIC_APP_NAME, "Pentarchy"),
 
-  // "mock" (default in preview — this build container is blocked by the store's
-  // SiteGround bot protection) or "live" (real device hits the Store API directly).
+  // "mock" (local demo data), "live" (direct WooCommerce Store API), or
+  // "glp" (the trusted FastAPI proxy -> GLP App Connector on the real store).
   dataSource: (str(process.env.EXPO_PUBLIC_DATA_SOURCE, "mock") as DataSource),
+
+  // Backend proxy base (this app's FastAPI). GLP storefront calls go to
+  // {backendUrl}/api/glp/*. The GLP shared secret lives ONLY on the server.
+  backendUrl: str(process.env.EXPO_PUBLIC_BACKEND_URL, ""),
 
   // e.g. https://apeps.co.uk  → Store API at {base}/wp-json/wc/store/v1
   storeApiBaseUrl: str(process.env.EXPO_PUBLIC_STORE_API_BASE_URL, "https://apeps.co.uk"),
-  websiteUrl: str(process.env.EXPO_PUBLIC_WEBSITE_URL, "https://apeps.co.uk"),
-  supportUrl: str(process.env.EXPO_PUBLIC_SUPPORT_URL, "https://apeps.co.uk/contact"),
+  websiteUrl: str(process.env.EXPO_PUBLIC_WEBSITE_URL, "https://ap3p-fitness.com"),
+  supportUrl: str(process.env.EXPO_PUBLIC_SUPPORT_URL, "https://ap3p-fitness.com/contact"),
   whatsappUrl: str(process.env.EXPO_PUBLIC_WHATSAPP_URL, ""),
 
   // Future secure Apeps App Connector (WordPress plugin) base — unused in Phase 1.

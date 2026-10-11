@@ -2,7 +2,7 @@
 // Ownership-scoped by the connector; the app only formats allow-listed fields.
 
 import { env } from "@/src/config/env";
-import type { Order, OrderLine, OrderTracking } from "@/src/types/order";
+import type { Order, OrderLine } from "@/src/types/order";
 
 import type { OrdersProvider } from "./provider";
 
@@ -37,23 +37,6 @@ async function request<T>(path: string, token: string): Promise<T> {
   }
 }
 
-function mapTracking(raw: any): OrderTracking | null {
-  if (!raw) return null;
-  return {
-    carrier: String(raw.carrier ?? ""),
-    number: String(raw.number ?? ""),
-    url: String(raw.url ?? ""),
-    status: String(raw.status ?? ""),
-    events: Array.isArray(raw.events)
-      ? raw.events.map((e: any) => ({
-          label: String(e.label ?? ""),
-          date: e.date ? String(e.date) : null,
-          done: Boolean(e.done),
-        }))
-      : [],
-  };
-}
-
 function mapOrder(raw: any): Order {
   const lines: OrderLine[] = Array.isArray(raw.lines)
     ? raw.lines.map((l: any, i: number) => ({
@@ -72,7 +55,7 @@ function mapOrder(raw: any): Order {
     total: String(raw.total ?? ""),
     itemCount: Number(raw.itemCount ?? lines.reduce((n, l) => n + l.quantity, 0)),
     lines,
-    tracking: mapTracking(raw.tracking),
+    fulfilment: null,
   };
 }
 

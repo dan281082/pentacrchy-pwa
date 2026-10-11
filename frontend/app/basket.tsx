@@ -1,7 +1,6 @@
 import { Image } from "expo-image";
 import { BlurView } from "expo-blur";
 import { useRouter } from "expo-router";
-import * as WebBrowser from "expo-web-browser";
 import {
   Pressable,
   ScrollView,
@@ -16,7 +15,6 @@ import { Button } from "@/src/components/ui/Button";
 import { EmptyState } from "@/src/components/ui/EmptyState";
 import { QuantityStepper } from "@/src/components/ui/QuantityStepper";
 import { TopBar } from "@/src/components/ui/TopBar";
-import { env } from "@/src/config/env";
 import {
   useBasketStore,
   selectItemCount,
@@ -39,10 +37,8 @@ export default function BasketScreen() {
   const subtotal = meta ? formatMinor(String(subtotalMinor), meta) : "";
 
   const onCheckout = () => {
-    // Secure website-checkout fallback — payment completes on the WooCommerce
-    // store (source of truth). Stock is enforced server-side so sold-out units
-    // cannot be purchased.
-    WebBrowser.openBrowserAsync(`${env.websiteUrl}/checkout`).catch(() => {});
+    // In-app USDT (TRC20) checkout via the GLP connector — no website redirect.
+    router.push("/checkout");
   };
 
   if (lines.length === 0) {
@@ -118,8 +114,8 @@ export default function BasketScreen() {
           <View style={styles.noteBox}>
             <Ionicons name="lock-closed-outline" size={16} color={colors.brandSecondary} />
             <Text style={styles.noteText}>
-              Checkout & payment complete securely on the Apeps website. Final VAT, shipping and
-              total are confirmed by WooCommerce, and stock limits prevent overselling.
+              Pay securely in-app with USDT (TRC20). Final VAT, shipping and total are confirmed by
+              WooCommerce, and stock is re-validated at checkout to prevent overselling.
             </Text>
           </View>
         </View>

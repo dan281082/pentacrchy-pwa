@@ -1,11 +1,10 @@
 import { Image } from "expo-image";
 import { useLocalSearchParams } from "expo-router";
-import * as WebBrowser from "expo-web-browser";
-import { ScrollView, StyleSheet, Text, View } from "react-native";
+import { RefreshControl, ScrollView, StyleSheet, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { Button } from "@/src/components/ui/Button";
+import { ShippingLabelSection } from "@/src/components/orders/ShippingLabelSection";
 import { ErrorState } from "@/src/components/ui/ErrorState";
 import { Skeleton } from "@/src/components/ui/Skeleton";
 import { TopBar } from "@/src/components/ui/TopBar";
@@ -40,13 +39,6 @@ function formatDate(iso: string): string {
   return d.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
 }
 
-function formatDateTime(iso: string | null): string {
-  if (!iso) return "";
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return "";
-  return d.toLocaleString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
-}
-
 export default function OrderDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const insets = useSafeAreaInsets();
@@ -77,8 +69,16 @@ export default function OrderDetailScreen() {
 
   return (
     <View style={styles.container} testID="order-detail-screen">
-      <TopBar title={order.number} showBack showBasket={false} />
+      <TopBar title={`Order #${order.number}`} showBack showBasket={false} />
       <ScrollView
+        refreshControl={
+          <RefreshControl
+            refreshing={query.isRefetching}
+            onRefresh={() => query.refetch()}
+            tintColor={colors.brandPrimary}
+            colors={[colors.brandPrimary]}
+          />
+        }
         contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg, paddingBottom: insets.bottom + spacing.xl }}
       >
         {/* Summary */}
@@ -96,6 +96,9 @@ export default function OrderDetailScreen() {
             <Text style={styles.totalValue}>{order.total}</Text>
           </View>
         </View>
+
+        {/* Customer-supplied postage label */}
+        <ShippingLabelSection order={order} />
 
         {/* Items */}
         <View>
@@ -119,62 +122,6 @@ export default function OrderDetailScreen() {
             ))}
           </View>
         </View>
-
-        {/* Tracking */}
-        {order.tracking ? (
-          <View>
-            <Text style={styles.sectionTitle}>Tracking</Text>
-            <View style={styles.card}>
-              <View style={styles.trackHeader}>
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.trackCarrier}>{order.tracking.carrier}</Text>
-                  <Text style={styles.trackNumber}>{order.tracking.number}</Text>
-                </View>
-                <View style={styles.trackStatusPill}>
-                  <Text style={styles.trackStatusText}>{order.tracking.status}</Text>
-                </View>
-              </View>
-
-              <View style={styles.timeline}>
-                {order.tracking.events.map((ev, i) => {
-                  const last = i === order.tracking!.events.length - 1;
-                  return (
-                    <View key={`${ev.label}-${i}`} style={styles.event} testID={`track-event-${i}`}>
-                      <View style={styles.eventRail}>
-                        <View style={[styles.eventDot, ev.done && styles.eventDotDone]}>
-                          {ev.done && <Ionicons name="checkmark" size={11} color={colors.onBrandPrimary} />}
-                        </View>
-                        {!last && <View style={[styles.eventLine, ev.done && styles.eventLineDone]} />}
-                      </View>
-                      <View style={styles.eventBody}>
-                        <Text style={[styles.eventLabel, !ev.done && styles.eventLabelPending]}>{ev.label}</Text>
-                        {!!ev.date && <Text style={styles.eventDate}>{formatDateTime(ev.date)}</Text>}
-                      </View>
-                    </View>
-                  );
-                })}
-              </View>
-
-              {!!order.tracking.url && (
-                <Button
-                  title="Track on carrier website"
-                  icon="open-outline"
-                  variant="secondary"
-                  onPress={() => WebBrowser.openBrowserAsync(order.tracking!.url).catch(() => {})}
-                  style={{ marginTop: spacing.md }}
-                  testID="order-track-button"
-                />
-              )}
-            </View>
-          </View>
-        ) : (
-          <View style={styles.card}>
-            <View style={styles.noTrack}>
-              <Ionicons name="time-outline" size={18} color={colors.onSurfaceTertiary} />
-              <Text style={styles.noTrackText}>Tracking appears once your order is dispatched.</Text>
-            </View>
-          </View>
-        )}
       </ScrollView>
     </View>
   );
@@ -200,22 +147,4 @@ const styles = StyleSheet.create({
   lineName: { color: colors.onSurface, fontSize: fontSize.base, fontWeight: fontWeight.medium },
   lineQty: { color: colors.onSurfaceTertiary, fontSize: fontSize.sm, marginTop: 2 },
   lineTotal: { color: colors.onSurface, fontSize: fontSize.base, fontWeight: fontWeight.medium },
-  trackHeader: { flexDirection: "row", alignItems: "center" },
-  trackCarrier: { color: colors.onSurface, fontSize: fontSize.lg, fontWeight: fontWeight.medium },
-  trackNumber: { color: colors.onSurfaceTertiary, fontSize: fontSize.sm, marginTop: 2 },
-  trackStatusPill: { backgroundColor: colors.brandTertiary, borderRadius: radius.sm, paddingHorizontal: spacing.sm, paddingVertical: 4 },
-  trackStatusText: { color: colors.onBrandTertiary, fontSize: fontSize.sm, fontWeight: fontWeight.medium },
-  timeline: { marginTop: spacing.sm },
-  event: { flexDirection: "row", gap: spacing.md },
-  eventRail: { alignItems: "center", width: 22 },
-  eventDot: { width: 22, height: 22, borderRadius: 11, backgroundColor: colors.surfaceTertiary, borderWidth: 1, borderColor: colors.borderStrong, alignItems: "center", justifyContent: "center" },
-  eventDotDone: { backgroundColor: colors.brandPrimary, borderColor: colors.brandPrimary },
-  eventLine: { flex: 1, width: 2, backgroundColor: colors.border, minHeight: 20 },
-  eventLineDone: { backgroundColor: colors.brandPrimary },
-  eventBody: { flex: 1, paddingBottom: spacing.lg },
-  eventLabel: { color: colors.onSurface, fontSize: fontSize.base, fontWeight: fontWeight.medium },
-  eventLabelPending: { color: colors.onSurfaceTertiary, fontWeight: fontWeight.regular },
-  eventDate: { color: colors.onSurfaceTertiary, fontSize: fontSize.sm, marginTop: 2 },
-  noTrack: { flexDirection: "row", alignItems: "center", gap: spacing.sm },
-  noTrackText: { flex: 1, color: colors.onSurfaceTertiary, fontSize: fontSize.base },
 });

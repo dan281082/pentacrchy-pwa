@@ -6,9 +6,14 @@ import { env } from "@/src/config/env";
 
 import { mockProvider } from "./mock/provider";
 import { liveProvider } from "./store-api";
+import { glpCatalogueProvider } from "./glp/catalogue";
 import type { CatalogueProvider } from "./provider";
 
 export const catalogue: CatalogueProvider =
-  env.dataSource === "live" ? liveProvider : mockProvider;
+  env.dataSource === "glp"
+    ? glpCatalogueProvider
+    : env.dataSource === "live"
+      ? liveProvider
+      : mockProvider;
 
 export const activeDataSource = env.dataSource;

@@ -4,7 +4,12 @@ import { env } from "@/src/config/env";
 
 import { liveOrdersProvider } from "./live";
 import { mockOrdersProvider } from "./mock";
+import { glpOrdersProvider } from "../glp/orders";
 import type { OrdersProvider } from "./provider";
 
 export const orders: OrdersProvider =
-  env.dataSource === "live" ? liveOrdersProvider : mockOrdersProvider;
+  env.dataSource === "glp"
+    ? glpOrdersProvider
+    : env.dataSource === "live"
+      ? liveOrdersProvider
+      : mockOrdersProvider;

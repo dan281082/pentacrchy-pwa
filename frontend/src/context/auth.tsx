@@ -18,6 +18,7 @@ import React, {
 } from "react";
 
 import { auth } from "@/src/api/auth";
+import { glpClient } from "@/src/api/glp/client";
 import { storage } from "@/src/utils/storage";
 import type { AppUser, AuthSession, RegisterInput } from "@/src/types/auth";
 
@@ -68,6 +69,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const apply = useCallback((session: AuthSession | null) => {
     sessionRef.current = session;
+    // Keep the GLP client's bearer token in sync with the active session.
+    glpClient.setToken(session?.accessToken ?? null);
     const u = session?.customer ?? null;
     setUser(u);
     setAccessToken(session?.accessToken ?? null);
