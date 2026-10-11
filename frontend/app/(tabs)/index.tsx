@@ -7,6 +7,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { ProductRail } from "@/src/components/product/ProductRail";
+import { InstallHint } from "@/src/components/pwa/InstallHint";
 import { ErrorState } from "@/src/components/ui/ErrorState";
 import { TopBar } from "@/src/components/ui/TopBar";
 import { env } from "@/src/config/env";
@@ -87,6 +88,8 @@ export default function HomeScreen() {
               testID="home-recent-rail"
             />
           )}
+
+          <InstallHint />
 
           {/* Support shortcut card */}
           <Pressable testID="home-support-card" onPress={openSupport} style={styles.supportCard}>

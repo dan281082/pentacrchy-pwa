@@ -152,3 +152,12 @@ overpaid/failed/cancelled; `complete` → gateway `payment_complete()` → WooCo
 - Delivery failed because WP used PHP mail() with From = dan281082@googlemail.com (Gmail DMARC rejects). User set WooCommerce From address to support@ap3p-fitness.com (confirmed live, order #275). From name / Site Title still "My WordPress" (user to change to "Pentarchy Vial").
 - v2.1.1+ includes email safety net (sends standard WC email once if WC did not). v2.1.2+ diagnostics (event ring buffer, transport, settings snapshot).
 - Optional: WP Mail SMTP with support@ap3p-fitness.com for authenticated sending.
+
+## Update — PWA release (no native apps)
+- Hosting: SiteGround subdomain app.ap3p-fitness.com (static Expo web export) + PHP proxy pwa/api/glp.php (loads WP via wp-load.php, dispatches glp/v1 internally with GLP_APP_SHARED_SECRET; allow-listed routes; replaces FastAPI in prod).
+- Files: frontend/public/{index.html, manifest.webmanifest, sw.js, icons/*}; frontend/pwa/{.htaccess, api/glp.php}; scripts/build-pwa.sh → /app/pwa-release/pentarchy-vial-pwa.zip
+- SW caches shell/static only; never /api, non-GET or cross-origin.
+- InstallHint on Home (web only; iOS instructions / Android prompt).
+- Names: manifest name "Pentarchy Vial", short "Pentarchy"; in-app wordmark PENTARCHY.
+- Crypto stays Test Mode until final production E2E. WP Mail SMTP not installed (email verified via order #276).
+- STATUS: release zip built; awaiting user to create subdomain + upload; then E2E on https://app.ap3p-fitness.com.
