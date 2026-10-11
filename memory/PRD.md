@@ -163,3 +163,29 @@ overpaid/failed/cancelled; `complete` → gateway `payment_complete()` → WooCo
 - STATUS: release zip built; awaiting user to create subdomain + upload; then E2E on https://app.ap3p-fitness.com.
 - PWA LIVE at https://app.ap3p-fitness.com (SiteGround, A record → 35.214.14.95; earlier doubled subdomain app.ap3p-fitness.com.ap3p-fitness.com fixed by user). PHP proxy verified: loads WP, health 200 (connector 2.1.4), auth/catalogue/orders/labels OK, 401/403/404 guards OK (iteration_8).
 - Staff login test@test.com now rejected (password changed on WP) — staff check skipped by user.
+- Checkout now shows enabled crypto networks from /crypto/networks (TRON default, Ethereum available). Boot screen inline in index.html; old GLP SW kill-switch (public/service-worker.js) + unregister foreign SWs; manifest.json/glp-icon.png overridden with Pentarchy.
+- Stray preview order #280 (r30 £23, Processing) placed accidentally by testing agent — user to cancel in WooCommerce to restore stock.
+- Proposed next: Web Push stock alerts (VAPID, connector v2.2.0) — awaiting user approval.
+- v2.2.0 connector: includes/push.php + vendor (minishlink/web-push 9) — Web Push stock alerts (new_vial / back_in_stock prefs per member; VAPID keys generated server-side in option glp_push_vapid; subs in user meta _glp_push_subs; triggers: publish/private-flag-tick (deferred 60s, once per product, baseline for existing), outofstock→available only during product-side saves; Action Scheduler sending; 404/410 cleanup; POST /push/{status,subscribe,prefs,unsubscribe,test}).
+- App: Account → Stock alerts (StockAlerts.tsx, utils/web-push.ts); sw.js push + notificationclick → /product/{id}.
+
+## Update — v2.3.0 staff operations (connector source now persisted at /app/backend/connector-src/glp-app-connector)
+- includes/manage.php: caps glp_manage_catalogue / glp_manage_members; role "Pentarchy Store Manager" (glp_store_manager: fulfil+catalogue+members, no wp-admin); /me adds manage/members flags.
+- Routes: GET/POST /manage/products, GET/POST /manage/products/{id}, POST /manage/products/{id}/duplicate (WC duplicate → draft), GET /manage/audit, GET /manage/members, POST /manage/members/{id} {approved}.
+- Audit trail: option glp_staff_audit (last 1000) + product meta _glp_audit (last 100).
+- Sales: total_sales meta + 30-day sum from processing/completed orders.
+- Notify members: ONLY via staff save tick box (automatic push triggers removed from push.php).
+- ERC20 only: /crypto/networks filtered to ethereum; POST /orders & /crypto-network reject non-ethereum.
+- PWA renamed "Pentarchy" (manifest/title). Staff UI: (tabs)/products.tsx, app/manage/product/[id].tsx, app/manage/members.tsx, app/manage/audit.tsx.
+- STATUS: built, NOT yet installed/tested live.
+
+## Update — v2.4.0: COA + final Pentarchy polish (2026-06)
+- COA (Certificate of Analysis), optional per product: connector `includes/coa.php`. Staff can upload a PDF/JPG/PNG (≤5 MB, kept in a private folder outside the web root, never in the media library) or enter an https URL through manage/products save (coa_file/coa_name/coa_url/coa_remove). `coa` is returned in the catalogue/product payloads (customer-safe). Members fetch it via GET /glp/v1/products/{id}/coa (approved member + members-only + published; staff can fetch any status). Proxy routes were added in glp.php and glp_proxy.py.
+- Customer product page: CoaSection is shown only when a COA exists. The "Ask a question" link was removed.
+- Staff editor: COA card (upload / link / remove), photos resized on the device (expo-image-manipulator, 1600px, JPEG 80%), and confirm dialogs before unpublish, stock set to zero, COA removal and member suspension. Every save refreshes all queries; the product detail uses staleTime 0.
+- New staff-created products default to members-only with catalog visibility hidden. wp_robots adds noindex to members-only product pages.
+- Customer WooCommerce emails get Reply-To thepentarchy@proton.me; the sender is unchanged.
+- Branding: "Vial(s)" was removed from app text (Shop tab, "Available now", etc.); the push title is now "New product available". The Account screen shows a Contact email row; the Data source badge was removed.
+- Deliverables: backend/glp-app-connector.zip (v2.4.0), deliverables/glp-app-connector-2.4.0.zip, /app/pwa-release/pentarchy-pwa.zip.
+- Known: the WooCommerce category named "Vials" on WP still appears in the app. Rename it in WP admin.
+- Tested: iteration_10 (customer flows pass; COA hidden correctly while v2.3.0 is live).

@@ -4,8 +4,13 @@
     <meta charset="utf-8" />
     <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no, viewport-fit=cover" />
-    <title>Pentarchy Vial</title>
-    <meta name="description" content="Private members' storefront for available vials." />
+    <title>Pentarchy</title>
+    <meta name="description" content="Pentarchy — private members' storefront." />
+    <meta name="robots" content="noindex, nofollow" />
+    <meta property="og:title" content="Pentarchy" />
+    <meta property="og:site_name" content="Pentarchy" />
+    <meta property="og:description" content="Private members' storefront." />
+    <meta name="twitter:title" content="Pentarchy" />
     <meta name="theme-color" content="#121214" />
     <meta name="color-scheme" content="dark" />
     <link rel="manifest" href="/manifest.webmanifest" />
@@ -34,9 +39,22 @@
   </head>
 
   <body>
-    <noscript>You need to enable JavaScript to run Pentarchy Vial.</noscript>
-    <div id="root"></div>
+    <noscript>You need to enable JavaScript to run Pentarchy.</noscript>
+    <div id="root"><div id="boot" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#121214;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif"><div style="color:#fff;font-size:28px;font-weight:600;letter-spacing:6px">PENTARCHY<span style="color:#2563EB">.</span></div><div style="color:#8E8E93;font-size:13px;letter-spacing:2px;margin-top:10px">VIAL</div></div></div>
     <script>
+      if ("serviceWorker" in navigator) {
+        // Remove any service worker left on this origin by the old GLP app
+        // (anything that isn't our /sw.js), then register the Pentarchy shell SW.
+        navigator.serviceWorker.getRegistrations().then(function (regs) {
+          regs.forEach(function (r) {
+            var url = (r.active || r.waiting || r.installing || {}).scriptURL || "";
+            if (!/\/sw\.js(\?|$)/.test(url)) {
+              r.unregister();
+              if (window.caches) caches.keys().then(function (ks) { ks.forEach(function (k) { if (k.indexOf("pentarchy-shell-") !== 0) caches.delete(k); }); });
+            }
+          });
+        }).catch(function () {});
+      }
       // Shell-only service worker (never caches API / account / order / label data).
       if ("serviceWorker" in navigator && location.protocol === "https:" && !/[?&]nosw\b/.test(location.search)) {
         window.addEventListener("load", function () {

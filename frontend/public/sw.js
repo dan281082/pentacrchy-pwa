@@ -1,10 +1,10 @@
-/* Pentarchy Vial service worker.
+/* Pentarchy service worker.
  * Caches ONLY the static app shell (HTML entry, hashed JS/CSS bundles, fonts,
  * icons and bundled images). It NEVER caches /api/* (account, catalogue,
  * orders, crypto invoices, shipping labels/QRs, fulfilment) or any non-GET or
  * cross-origin request: all sensitive / transactional data is always live.
  */
-const VERSION = "pentarchy-shell-v1";
+const VERSION = "pentarchy-shell-v4";
 const SHELL = ["/", "/manifest.webmanifest", "/icons/icon-192.png", "/icons/icon-512.png", "/icons/apple-touch-icon.png"];
 
 self.addEventListener("install", (event) => {
@@ -55,4 +55,39 @@ self.addEventListener("fetch", (event) => {
       ),
     );
   }
+});
+
+// ── Pentarchy stock alerts (standard Web Push). The payload only carries the
+// title/body and an in-app path; it is shown immediately (required by iOS).
+self.addEventListener("push", (event) => {
+  let d = {};
+  try { d = event.data ? event.data.json() : {}; } catch (e) { d = { body: event.data ? event.data.text() : "" }; }
+  const path = typeof d.url === "string" && d.url.startsWith("/") ? d.url : "/";
+  event.waitUntil(
+    self.registration.showNotification(d.title || "Pentarchy", {
+      body: d.body || "",
+      icon: "/icons/icon-192.png",
+      badge: "/icons/icon-192.png",
+      tag: d.tag || "pentarchy",
+      data: { url: path },
+    }),
+  );
+});
+
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  const target = new URL((event.notification.data && event.notification.data.url) || "/", self.location.origin).href;
+  event.waitUntil(
+    (async () => {
+      const wins = await self.clients.matchAll({ type: "window", includeUncontrolled: true });
+      for (const c of wins) {
+        if (new URL(c.url).origin === self.location.origin && "focus" in c) {
+          await c.focus();
+          if ("navigate" in c) await c.navigate(target);
+          return;
+        }
+      }
+      await self.clients.openWindow(target);
+    })(),
+  );
 });

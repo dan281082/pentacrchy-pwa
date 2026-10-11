@@ -92,7 +92,10 @@ export interface Product {
   attributes: ProductAttribute[];
   variations: VariationRef[];
   featured: boolean;
+  coa?: ProductCoa | null; // optional Certificate of Analysis (members-only)
 }
+
+export type ProductCoa = { type: "url"; url: string } | { type: "file"; mime: string; name: string };
 
 export interface Category {
   id: number;

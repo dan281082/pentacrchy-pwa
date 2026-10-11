@@ -1,6 +1,6 @@
 <?php
 /**
- * Pentarchy Vial — production API proxy (replaces the FastAPI proxy).
+ * Pentarchy — production API proxy (replaces the FastAPI proxy).
  *
  * Lives at https://app.ap3p-fitness.com/api/glp.php and is reached as
  * /api/glp/<route> via .htaccess. It loads the SAME WordPress install
@@ -67,6 +67,20 @@ $routes = array(
     array('POST', '#^/fulfilment/orders/(\d+)/ready$#', '/fulfilment/orders/$1/ready'),
     array('POST', '#^/fulfilment/orders/(\d+)/dispatch$#', '/fulfilment/orders/$1/dispatch'),
     array('GET',  '#^/fulfilment/debug/emails$#', '/fulfilment/debug/emails'),
+  array('POST', '#^/push/status$#', '/push/status'),
+  array('POST', '#^/push/subscribe$#', '/push/subscribe'),
+  array('POST', '#^/push/prefs$#', '/push/prefs'),
+  array('POST', '#^/push/unsubscribe$#', '/push/unsubscribe'),
+  array('POST', '#^/push/test$#', '/push/test'),
+  array('GET',  '#^/products/(\d+)/coa$#', '/products/$1/coa'),
+  array('GET',  '#^/manage/products$#', '/manage/products'),
+  array('POST', '#^/manage/products$#', '/manage/products'),
+  array('GET',  '#^/manage/products/(\d+)$#', '/manage/products/$1'),
+  array('POST', '#^/manage/products/(\d+)$#', '/manage/products/$1'),
+  array('POST', '#^/manage/products/(\d+)/duplicate$#', '/manage/products/$1/duplicate'),
+  array('GET',  '#^/manage/audit$#', '/manage/audit'),
+  array('GET',  '#^/manage/members$#', '/manage/members'),
+  array('POST', '#^/manage/members/(\d+)$#', '/manage/members/$1'),
     array('GET',  '#^/health$#', '/version'),
 );
 

@@ -112,8 +112,8 @@ export default function OrdersScreen() {
           testID="orders-empty"
           icon="receipt-outline"
           title="No orders yet"
-          message="Vials you order will appear here with live tracking."
-          actionLabel="Browse vials"
+          message="Products you order will appear here with live tracking."
+          actionLabel="Browse products"
           onAction={() => router.replace("/(tabs)/shop")}
         />
       ) : (

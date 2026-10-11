@@ -12,7 +12,7 @@ export default function ShopScreen() {
 
   return (
     <View style={styles.container} testID="shop-screen">
-      <TopBar title="Available Vials" showSearch />
+      <TopBar title="Available now" showSearch />
       <ProductListing initialSort={initialSort} testID="shop-listing" />
     </View>
   );

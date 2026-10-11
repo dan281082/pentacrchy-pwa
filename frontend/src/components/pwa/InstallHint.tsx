@@ -1,4 +1,4 @@
-// "Install Pentarchy Vial" hint — web only, hidden when already installed
+// "Install Pentarchy" hint — web only, hidden when already installed
 // (standalone) or dismissed. Android/desktop Chrome: native install prompt.
 // iOS Safari: Share → Add to Home Screen instructions (no prompt API exists).
 
@@ -44,7 +44,7 @@ export function InstallHint() {
     <View style={styles.card} testID="install-hint">
       <View style={styles.icon}><Ionicons name="download-outline" size={20} color={colors.brandSecondary} /></View>
       <View style={{ flex: 1, gap: 2 }}>
-        <Text style={styles.title}>Install Pentarchy Vial</Text>
+        <Text style={styles.title}>Install Pentarchy</Text>
         <Text style={styles.body}>
           {ios
             ? "Tap the Share button in Safari, then “Add to Home Screen”."

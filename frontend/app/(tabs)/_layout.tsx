@@ -42,7 +42,7 @@ export default function TabsLayout() {
       />
       <Tabs.Screen
         name="shop"
-        options={{ title: "Vials", tabBarIcon: icon("flask-outline", "flask"), tabBarButtonTestID: "tab-shop" }}
+        options={{ title: "Shop", tabBarIcon: icon("flask-outline", "flask"), tabBarButtonTestID: "tab-shop" }}
       />
       <Tabs.Screen
         name="search"
@@ -51,6 +51,15 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="orders"
         options={{ title: "Orders", tabBarIcon: icon("receipt-outline", "receipt"), tabBarButtonTestID: "tab-orders" }}
+      />
+      <Tabs.Screen
+        name="products"
+        options={{
+          title: "Products",
+          href: user?.manage ? undefined : null,
+          tabBarIcon: icon("pricetags-outline", "pricetags"),
+          tabBarButtonTestID: "tab-products",
+        }}
       />
       <Tabs.Screen
         name="fulfilment"

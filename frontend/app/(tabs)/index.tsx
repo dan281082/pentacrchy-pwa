@@ -1,8 +1,7 @@
 import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
-import * as WebBrowser from "expo-web-browser";
-import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Linking, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -10,17 +9,16 @@ import { ProductRail } from "@/src/components/product/ProductRail";
 import { InstallHint } from "@/src/components/pwa/InstallHint";
 import { ErrorState } from "@/src/components/ui/ErrorState";
 import { TopBar } from "@/src/components/ui/TopBar";
-import { env } from "@/src/config/env";
 import { useProducts, useProductsByIds } from "@/src/hooks/use-catalogue";
 import { useHistoryStore } from "@/src/store/history-store";
 import { colors, radius, spacing, fontSize, fontWeight } from "@/src/theme";
 
-// Promo banner — sourced from app config in Phase 2 (Apeps App Connector).
+// Promo banner — sourced from app config in Phase 2 (app connector).
 const PROMO = {
   image: "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=1000&q=80",
   eyebrow: "MEMBERS ONLY",
-  title: "Surplus vials,\nwhile stock lasts",
-  cta: "Browse vials",
+  title: "Members-only stock,\nwhile it lasts",
+  cta: "Browse products",
 };
 
 function HeroBanner() {
@@ -53,7 +51,7 @@ export default function HomeScreen() {
   const recentlyViewed = useProductsByIds(viewedIds);
 
   const openSupport = () => {
-    WebBrowser.openBrowserAsync(env.supportUrl).catch(() => {});
+    Linking.openURL("mailto:thepentarchy@proton.me").catch(() => {});
   };
 
   const hardError = available.isError;
@@ -98,7 +96,7 @@ export default function HomeScreen() {
             </View>
             <View style={{ flex: 1 }}>
               <Text style={styles.supportTitle}>Need a hand?</Text>
-              <Text style={styles.supportSub}>Contact Pentarchy support</Text>
+              <Text style={styles.supportSub}>thepentarchy@proton.me</Text>
             </View>
             <Ionicons name="chevron-forward" size={20} color={colors.onSurfaceTertiary} />
           </Pressable>

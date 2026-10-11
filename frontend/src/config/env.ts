@@ -25,8 +25,8 @@ export const env = {
 
   // e.g. https://apeps.co.uk  → Store API at {base}/wp-json/wc/store/v1
   storeApiBaseUrl: str(process.env.EXPO_PUBLIC_STORE_API_BASE_URL, "https://apeps.co.uk"),
-  websiteUrl: str(process.env.EXPO_PUBLIC_WEBSITE_URL, "https://ap3p-fitness.com"),
-  supportUrl: str(process.env.EXPO_PUBLIC_SUPPORT_URL, "https://ap3p-fitness.com/contact"),
+  websiteUrl: str(process.env.EXPO_PUBLIC_WEBSITE_URL, "mailto:thepentarchy@proton.me"),
+  supportUrl: str(process.env.EXPO_PUBLIC_SUPPORT_URL, "mailto:thepentarchy@proton.me"),
   whatsappUrl: str(process.env.EXPO_PUBLIC_WHATSAPP_URL, ""),
 
   // Future secure Apeps App Connector (WordPress plugin) base — unused in Phase 1.

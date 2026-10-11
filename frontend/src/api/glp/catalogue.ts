@@ -17,6 +17,7 @@ import type {
 
 import type { CatalogueProvider } from "../provider";
 import { glpFetch } from "./client";
+import { mapCoa } from "./coa";
 
 const GBP = (minor: string): PriceInfo => ({
   price: minor,
@@ -102,6 +103,7 @@ function mapProduct(p: any): Product {
     attributes,
     variations,
     featured: false,
+    coa: mapCoa(p?.coa),
   };
 }
 

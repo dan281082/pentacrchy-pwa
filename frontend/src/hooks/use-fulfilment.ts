@@ -14,6 +14,8 @@ export function useFulfilmentOrders() {
   return useQuery({
     queryKey: fulfilmentKeys.all,
     queryFn: () => glpFulfilment.list(),
+    staleTime: 0,
+    refetchInterval: 60_000,
     enabled: status === "ready" && !!user?.fulfilment,
   });
 }
@@ -23,6 +25,7 @@ export function useFulfilmentOrder(id: number) {
   return useQuery({
     queryKey: fulfilmentKeys.detail(id),
     queryFn: () => glpFulfilment.get(id),
+    staleTime: 0,
     enabled: status === "ready" && !!user?.fulfilment && Number.isFinite(id),
   });
 }

@@ -1,17 +1,18 @@
 import { useRouter } from "expo-router";
-import * as WebBrowser from "expo-web-browser";
-import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Linking, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { StockAlerts } from "@/src/components/account/StockAlerts";
 import { Button } from "@/src/components/ui/Button";
 import { TopBar } from "@/src/components/ui/TopBar";
 import { env } from "@/src/config/env";
-import { activeDataSource } from "@/src/api/catalogue";
 import { useAuth } from "@/src/context/auth";
 import { useFavouritesStore } from "@/src/store/favourites-store";
 import { displayTelegram } from "@/src/utils/telegram";
 import { colors, radius, spacing, fontSize, fontWeight } from "@/src/theme";
+
+const CONTACT_EMAIL = "thepentarchy@proton.me";
 
 type RowProps = {
   icon: keyof typeof Ionicons.glyphMap;
@@ -46,7 +47,6 @@ export default function AccountScreen() {
   const insets = useSafeAreaInsets();
   const { user, logout } = useAuth();
   const favCount = useFavouritesStore((s) => s.ids.length);
-  const web = (path: string) => WebBrowser.openBrowserAsync(`${env.websiteUrl}${path}`).catch(() => {});
 
   const fullName = [user?.firstName, user?.lastName].filter(Boolean).join(" ") || "Member";
 
@@ -77,35 +77,21 @@ export default function AccountScreen() {
           </View>
         </View>
 
+        <StockAlerts />
+
         <Section title="Shopping">
           <Row icon="heart-outline" label="Favourites" value={favCount ? String(favCount) : undefined} onPress={() => router.push("/favourites")} testID="account-favourites" />
           <Row icon="bag-handle-outline" label="Basket" onPress={() => router.push("/basket")} testID="account-basket" />
           <Row icon="receipt-outline" label="My Orders" onPress={() => router.push("/(tabs)/orders")} testID="account-orders" />
         </Section>
 
-        <Section title="Support">
-          <Row icon="help-circle-outline" label="Help & contact" onPress={() => WebBrowser.openBrowserAsync(env.supportUrl).catch(() => {})} testID="account-support" />
-          {!!env.whatsappUrl && (
-            <Row icon="logo-whatsapp" label="WhatsApp" onPress={() => WebBrowser.openBrowserAsync(env.whatsappUrl).catch(() => {})} testID="account-whatsapp" />
-          )}
+        <Section title="Contact">
+          <Row icon="mail-outline" label="Email us" value={CONTACT_EMAIL} onPress={() => Linking.openURL(`mailto:${CONTACT_EMAIL}`).catch(() => {})} testID="account-contact-email" />
         </Section>
 
-        <Section title="Legal & policies">
-          <Row icon="document-text-outline" label="Terms & conditions" onPress={() => web("/terms")} testID="account-terms" />
-          <Row icon="shield-checkmark-outline" label="Privacy policy" onPress={() => web("/privacy-policy")} testID="account-privacy" />
-          <Row icon="cube-outline" label="Delivery policy" onPress={() => web("/delivery")} testID="account-delivery" />
-          <Row icon="refresh-outline" label="Returns & refunds" onPress={() => web("/refund-policy")} testID="account-refunds" />
-        </Section>
 
         <Section title="App">
           <Row icon="information-circle-outline" label="Version" value={env.currentVersion} onPress={() => {}} testID="account-version" />
-          <View style={styles.row}>
-            <Ionicons name="server-outline" size={20} color={colors.onSurfaceSecondary} />
-            <Text style={styles.rowLabel}>Data source</Text>
-            <View style={[styles.badge, activeDataSource === "live" ? styles.badgeLive : styles.badgeMock]}>
-              <Text style={styles.badgeText}>{activeDataSource === "live" ? "LIVE" : "MOCK DATA"}</Text>
-            </View>
-          </View>
         </Section>
 
         <Button
@@ -118,8 +104,7 @@ export default function AccountScreen() {
         />
 
         <Text style={styles.footer}>
-          {env.appName} — private members' storefront. WooCommerce remains the source of truth for
-          stock, prices and orders.
+          Pentarchy — private members&apos; storefront.
         </Text>
       </ScrollView>
     </View>
@@ -152,9 +137,5 @@ const styles = StyleSheet.create({
   pressed: { backgroundColor: colors.surfaceTertiary },
   rowLabel: { flex: 1, color: colors.onSurface, fontSize: fontSize.base },
   rowValue: { color: colors.onSurfaceTertiary, fontSize: fontSize.base },
-  badge: { borderRadius: radius.sm, paddingHorizontal: spacing.sm, paddingVertical: 3 },
-  badgeLive: { backgroundColor: colors.success },
-  badgeMock: { backgroundColor: colors.surfaceTertiary },
-  badgeText: { color: colors.onSurface, fontSize: 10, fontWeight: fontWeight.medium, letterSpacing: 0.5 },
   footer: { color: colors.onSurfaceTertiary, fontSize: fontSize.sm, lineHeight: 18, textAlign: "center", paddingHorizontal: spacing.md, marginTop: spacing.xl },
 });

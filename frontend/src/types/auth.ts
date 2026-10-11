@@ -12,6 +12,8 @@ export interface AppUser {
   approved: boolean;
   /** Server-authoritative staff fulfilment permission (glp_fulfil_orders). */
   fulfilment?: boolean;
+  manage?: boolean;
+  members?: boolean;
 }
 
 export interface AuthSession {

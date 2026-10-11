@@ -66,7 +66,7 @@ export function ShippingLabelSection({ order }: { order: Order }) {
         <Info icon="checkmark-circle" color={colors.success} text={`Dispatched${f.dispatchedAt ? ` on ${formatDate(f.dispatchedAt)}` : ""} using your postage. The label can no longer be changed.`} testID="label-locked" />
       ) : !f.label ? (
         <Text style={styles.body}>
-          We post your vials using your own postage. Upload a PDF or photo of your postage label, or a postage QR code (JPG/PNG, max 5 MB).
+          We post your order using your own postage. Upload a PDF or photo of your postage label, or a postage QR code (JPG/PNG, max 5 MB).
         </Text>
       ) : null}
 

@@ -22,7 +22,7 @@ import logging
 from typing import Any, Optional
 
 import httpx
-from fastapi import APIRouter, Request, Response, Header
+from fastapi import APIRouter, Request, Response, Header, HTTPException
 from fastapi.responses import JSONResponse
 
 logger = logging.getLogger("glp_proxy")
@@ -212,6 +212,11 @@ async def glp_product(product_id: int, authorization: Optional[str] = Header(Non
     return await _forward("GET", f"/products/{product_id}", token=_token_from_auth(authorization))
 
 
+@glp_router.get("/products/{product_id}/coa")
+async def glp_product_coa(product_id: int, authorization: Optional[str] = Header(None)):
+    return await _forward("GET", f"/products/{product_id}/coa", token=_token_from_auth(authorization))
+
+
 # ── Basket / shipping / orders ──────────────────────────────────────────────
 @glp_router.post("/basket/validate")
 async def glp_validate(request: Request, authorization: Optional[str] = Header(None)):
@@ -310,3 +315,22 @@ async def glp_fulfil_ready(order_id: int, authorization: Optional[str] = Header(
 @glp_router.post("/fulfilment/orders/{order_id}/dispatch")
 async def glp_fulfil_dispatch(order_id: int, authorization: Optional[str] = Header(None)):
     return await _forward("POST", f"/fulfilment/orders/{order_id}/dispatch", token=_token_from_auth(authorization), json_body={})
+
+
+# ── Web Push stock alerts (member-scoped server-side; VAPID private key never leaves WP) ──
+@glp_router.post("/push/{action}")
+async def glp_push(action: str, request: Request, authorization: Optional[str] = Header(None)):
+    if action not in ("status", "subscribe", "prefs", "unsubscribe", "test"):
+        raise HTTPException(status_code=404, detail="Not Found")
+    return await _forward("POST", f"/push/{action}", token=_token_from_auth(authorization), json_body=await _json(request))
+
+
+# ── Staff catalogue / members management (capabilities enforced by WordPress) ──
+@glp_router.api_route("/manage/{path:path}", methods=["GET", "POST"])
+async def glp_manage(path: str, request: Request, authorization: Optional[str] = Header(None)):
+    import re as _re
+    if not _re.fullmatch(r"products(/\d+(/duplicate)?)?|audit|members(/\d+)?", path):
+        raise HTTPException(status_code=404, detail="Not Found")
+    if request.method == "GET":
+        return await _forward("GET", f"/manage/{path}", token=_token_from_auth(authorization), params=dict(request.query_params))
+    return await _forward("POST", f"/manage/{path}", token=_token_from_auth(authorization), json_body=await _json(request))

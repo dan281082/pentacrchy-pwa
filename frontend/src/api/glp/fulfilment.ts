@@ -19,6 +19,7 @@ export interface FulfilmentSummary {
   itemCount: number;
   total: string;
   labelKind: "label" | "qr" | null;
+  telegram: string;
 }
 
 export interface FulfilmentDetail extends FulfilmentSummary {
@@ -45,6 +46,7 @@ function mapSummary(o: any): FulfilmentSummary {
     customerName: String(o?.customer_name ?? ""),
     itemCount: Number(o?.item_count ?? 0),
     total: stripHtml(String(o?.total_display ?? "")),
+    telegram: String(o?.telegram ?? ""),
     labelKind: o?.label_kind === "qr" ? "qr" : o?.label_kind === "label" ? "label" : null,
   };
 }

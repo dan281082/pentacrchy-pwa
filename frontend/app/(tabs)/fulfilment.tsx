@@ -3,7 +3,7 @@
 
 import { useRouter } from "expo-router";
 import { useMemo, useState } from "react";
-import { FlatList, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from "react-native";
+import { FlatList, Pressable, RefreshControl, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -57,10 +57,13 @@ export default function FulfilmentScreen() {
   const q = useFulfilmentOrders();
   const [filter, setFilter] = useState<Filter>("active");
 
+  const [search, setSearch] = useState("");
   const data = useMemo(() => {
     const all = q.data?.orders ?? [];
-    return filter === "active" ? all.filter((o) => o.state !== "dispatched") : all.filter((o) => o.state === filter);
-  }, [q.data, filter]);
+    const byState = filter === "active" ? all.filter((o) => o.state !== "dispatched") : all.filter((o) => o.state === filter);
+    const t = search.trim().toLowerCase().replace(/^[#@]/, "");
+    return t ? byState.filter((o) => [o.number, o.customerName, o.telegram].some((v) => (v || "").toLowerCase().includes(t))) : byState;
+  }, [q.data, filter, search]);
 
   if (!user?.fulfilment) {
     return (
@@ -81,6 +84,9 @@ export default function FulfilmentScreen() {
   return (
     <View style={styles.container} testID="fulfilment-screen">
       <TopBar title="Fulfilment" showBasket={false} />
+      <View style={{ paddingHorizontal: spacing.lg, paddingTop: spacing.md }}>
+        <TextInput value={search} onChangeText={setSearch} placeholder="Search order #, customer or @telegram" placeholderTextColor={colors.onSurfaceTertiary} style={styles.search} testID="fulfil-search" />
+      </View>
       <View>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filters}>
           {filters.map((f) => {
@@ -119,6 +125,7 @@ export default function FulfilmentScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.surface },
+  search: { minHeight: 44, paddingHorizontal: spacing.md, borderRadius: radius.md, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.surfaceSecondary, color: colors.onSurface, fontSize: fontSize.base },
   filters: { paddingHorizontal: spacing.lg, paddingVertical: spacing.md, gap: spacing.sm },
   chip: { flexDirection: "row", alignItems: "center", gap: 6, minHeight: 36, paddingHorizontal: spacing.md, borderRadius: radius.pill, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.surfaceSecondary },
   chipOn: { backgroundColor: colors.brandPrimary, borderColor: colors.brandPrimary },

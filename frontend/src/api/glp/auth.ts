@@ -15,6 +15,8 @@ function mapCustomer(c: any): AppUser {
     telegramUsername: String(c?.telegram_username ?? c?.telegramUsername ?? ""),
     approved: Boolean(c?.approved),
     fulfilment: Boolean(c?.fulfilment),
+    manage: Boolean(c?.manage),
+    members: Boolean(c?.members),
   };
 }
 

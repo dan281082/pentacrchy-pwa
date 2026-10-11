@@ -64,7 +64,7 @@ export default function LoginScreen() {
           </View>
           <Text style={styles.title}>Members sign in</Text>
           <Text style={styles.subtitle}>
-            Private storefront for the group-buy community. Sign in to view available vials.
+            Private storefront for the group-buy community. Sign in to view available products.
           </Text>
 
           <View style={styles.form}>

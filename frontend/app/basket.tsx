@@ -49,8 +49,8 @@ export default function BasketScreen() {
           testID="basket-empty"
           icon="bag-handle-outline"
           title="Your basket is empty"
-          message="Browse available vials and add them to your basket."
-          actionLabel="Browse vials"
+          message="Browse available products and add them to your basket."
+          actionLabel="Browse products"
           onAction={() => router.replace("/(tabs)/shop")}
         />
       </View>
@@ -114,7 +114,7 @@ export default function BasketScreen() {
           <View style={styles.noteBox}>
             <Ionicons name="lock-closed-outline" size={16} color={colors.brandSecondary} />
             <Text style={styles.noteText}>
-              Pay securely in-app with USDT (TRC20). Final VAT, shipping and total are confirmed by
+              Pay securely in-app with USDT. Final VAT, shipping and total are confirmed by
               WooCommerce, and stock is re-validated at checkout to prevent overselling.
             </Text>
           </View>

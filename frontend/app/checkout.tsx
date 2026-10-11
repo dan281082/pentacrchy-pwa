@@ -4,7 +4,7 @@ import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text
 import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { glpCheckout, type ShippingMethod, type OrderItemInput, type ShippingAddressInput } from "@/src/api/glp/checkout";
+import { glpCheckout, type CryptoNetwork, type ShippingMethod, type OrderItemInput, type ShippingAddressInput } from "@/src/api/glp/checkout";
 import { GlpError } from "@/src/api/glp/client";
 import { Button } from "@/src/components/ui/Button";
 import { TextField } from "@/src/components/ui/TextField";
@@ -35,6 +35,9 @@ export default function CheckoutScreen() {
   const [methods, setMethods] = useState<ShippingMethod[]>([]);
   const [selectedMethod, setSelectedMethod] = useState<string>("");
   const [quoting, setQuoting] = useState(false);
+  const [networks, setNetworks] = useState<CryptoNetwork[]>([]);
+  const [network, setNetwork] = useState<string>("");
+  const [networksLoading, setNetworksLoading] = useState(true);
   const [placing, setPlacing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -83,17 +86,35 @@ export default function CheckoutScreen() {
     return () => clearTimeout(t);
   }, [addressReady, postcode, city, line1, quote]);
 
+  // Payment networks come ONLY from the gateway's enabled list (via the connector).
+  const loadNetworks = useCallback(async () => {
+    setNetworksLoading(true);
+    try {
+      const list = await glpCheckout.networks();
+      setNetworks(list);
+      setNetwork((cur) =>
+        cur && list.some((n) => n.id === cur) ? cur : list[0]?.id ?? "",
+      );
+    } catch {
+      setNetworks([]);
+    } finally {
+      setNetworksLoading(false);
+    }
+  }, []);
+  useEffect(() => { loadNetworks(); }, [loadNetworks]);
+
   const onPlace = async () => {
     setError(null);
     if (!addressReady) return setError("Please complete your delivery address.");
     if (!selectedMethod) return setError("Postage option not confirmed yet. Please wait a moment and try again.");
+    if (!network) return setError("Please choose a payment network.");
     setPlacing(true);
     try {
       const res = await glpCheckout.createOrder({
         items,
         shipping_address: address,
         shipping_method: selectedMethod,
-        network: "tron",
+        network,
         client_ref: `app-${Date.now()}`,
       });
       useBasketStore.getState().clear();
@@ -115,7 +136,7 @@ export default function CheckoutScreen() {
         <TopBar title="Checkout" showBack showBasket={false} />
         <View style={styles.empty}>
           <Text style={styles.emptyText}>Your basket is empty.</Text>
-          <Button title="Browse vials" onPress={() => router.replace("/(tabs)/shop")} />
+          <Button title="Browse products" onPress={() => router.replace("/(tabs)/shop")} />
         </View>
       </View>
     );
@@ -127,7 +148,7 @@ export default function CheckoutScreen() {
     <View style={styles.container} testID="checkout-screen">
       <TopBar title="Checkout" showBack showBasket={false} />
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : undefined}>
-        <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg, paddingBottom: insets.bottom + 180 }}>
+        <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{ padding: spacing.lg, gap: spacing.lg, paddingBottom: insets.bottom + 280 }}>
           <Text style={styles.section}>Delivery address</Text>
           <View style={styles.row}>
             <View style={{ flex: 1 }}><TextField label="First name" value={firstName} onChangeText={setFirstName} autoCapitalize="words" testID="co-first" /></View>
@@ -153,6 +174,30 @@ export default function CheckoutScreen() {
             <Pressable onPress={quote}><Text style={styles.retry}>Couldn&apos;t confirm postage option — tap to retry</Text></Pressable>
           )}
 
+          <Text style={styles.section}>Pay with USDT on</Text>
+          {networksLoading ? (
+            <Text style={styles.hint}>Loading payment networks…</Text>
+          ) : networks.length === 0 ? (
+            <Pressable onPress={loadNetworks}><Text style={styles.retry}>No payment networks available — tap to retry</Text></Pressable>
+          ) : (
+            networks.map((n) => {
+              const sel = n.id === network;
+              return (
+                <Pressable
+                  key={n.id}
+                  testID={`co-network-${n.id}`}
+                  onPress={() => setNetwork(n.id)}
+                  style={[styles.ship, sel && { borderColor: colors.brandSecondary }]}
+                  accessibilityRole="radio"
+                  accessibilityState={{ selected: sel }}
+                >
+                  <Ionicons name={sel ? "radio-button-on" : "radio-button-off"} size={20} color={sel ? colors.brandSecondary : colors.onSurfaceTertiary} />
+                  <Text style={styles.shipLabel}>{n.token} · {n.label}</Text>
+                </Pressable>
+              );
+            })
+          )}
+
           <Text style={styles.section}>Order summary</Text>
           <View style={styles.summary}>
             {lines.map((l) => (
@@ -176,7 +221,7 @@ export default function CheckoutScreen() {
       </KeyboardAvoidingView>
 
       <View style={[styles.cta, { paddingBottom: insets.bottom + spacing.md }]}>
-        <Button title="Place order & pay with USDT" icon="logo-bitcoin" onPress={onPlace} loading={placing} disabled={!addressReady || !selectedMethod} testID="place-order-button" />
+        <Button title="Place order & pay with USDT" icon="logo-bitcoin" onPress={onPlace} loading={placing} disabled={!addressReady || !selectedMethod || !network} testID="place-order-button" />
       </View>
     </View>
   );

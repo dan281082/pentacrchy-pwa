@@ -36,7 +36,7 @@ export default function PendingScreen() {
         <Text style={styles.title}>Account pending approval</Text>
         <Text style={styles.message}>
           Thanks{user?.firstName ? `, ${user.firstName}` : ""}! Your account is awaiting approval
-          by a community admin. Once approved you’ll be able to view available vials and place orders.
+          by a community admin. Once approved you’ll be able to view available products and place orders.
         </Text>
 
         {!!user?.telegramUsername && (

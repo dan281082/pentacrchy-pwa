@@ -2,7 +2,6 @@ import { Image } from "expo-image";
 import { BlurView } from "expo-blur";
 import * as Haptics from "expo-haptics";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import * as WebBrowser from "expo-web-browser";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Dimensions,
@@ -17,6 +16,7 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { CoaSection } from "@/src/components/product/CoaSection";
 import { FavouriteButton } from "@/src/components/product/FavouriteButton";
 import { ProductRail } from "@/src/components/product/ProductRail";
 import { Button } from "@/src/components/ui/Button";
@@ -26,7 +26,6 @@ import { QuantityStepper } from "@/src/components/ui/QuantityStepper";
 import { Skeleton } from "@/src/components/ui/Skeleton";
 import { StockBadge } from "@/src/components/ui/StockBadge";
 import { TopBar } from "@/src/components/ui/TopBar";
-import { env } from "@/src/config/env";
 import { useProduct, useProducts, useVariationDetails } from "@/src/hooks/use-catalogue";
 import { useBasketStore } from "@/src/store/basket-store";
 import { useHistoryStore } from "@/src/store/history-store";
@@ -261,27 +260,7 @@ export default function ProductScreen() {
             </View>
           )}
 
-          {/* Shipping / support links */}
-          <View style={styles.links}>
-            <Pressable
-              testID="product-shipping-link"
-              style={styles.linkRow}
-              onPress={() => WebBrowser.openBrowserAsync(`${env.websiteUrl}/delivery`).catch(() => {})}
-            >
-              <Ionicons name="cube-outline" size={18} color={colors.brandSecondary} />
-              <Text style={styles.linkText}>Shipping information</Text>
-              <Ionicons name="chevron-forward" size={16} color={colors.onSurfaceTertiary} />
-            </Pressable>
-            <Pressable
-              testID="product-support-link"
-              style={styles.linkRow}
-              onPress={() => WebBrowser.openBrowserAsync(env.supportUrl).catch(() => {})}
-            >
-              <Ionicons name="help-circle-outline" size={18} color={colors.brandSecondary} />
-              <Text style={styles.linkText}>Ask a question</Text>
-              <Ionicons name="chevron-forward" size={16} color={colors.onSurfaceTertiary} />
-            </Pressable>
-          </View>
+          <CoaSection productId={product.id} coa={product.coa} />
         </View>
 
         <ProductRail
@@ -372,9 +351,6 @@ const styles = StyleSheet.create({
   attrRow: { flexDirection: "row", justifyContent: "space-between", gap: spacing.md },
   attrKey: { color: colors.onSurfaceTertiary, fontSize: fontSize.base },
   attrVal: { color: colors.onSurfaceSecondary, fontSize: fontSize.base, flexShrink: 1, textAlign: "right" },
-  links: { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.border, paddingTop: spacing.sm },
-  linkRow: { flexDirection: "row", alignItems: "center", gap: spacing.md, paddingVertical: spacing.md },
-  linkText: { flex: 1, color: colors.onSurfaceSecondary, fontSize: fontSize.base },
   cta: {
     position: "absolute", left: 0, right: 0, bottom: 0,
     flexDirection: "row", alignItems: "center", gap: spacing.md,

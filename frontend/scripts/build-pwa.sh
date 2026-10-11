@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# Builds the production Pentarchy Vial PWA for app.ap3p-fitness.com.
+# Builds the production Pentarchy PWA for app.ap3p-fitness.com.
 # Usage: bash scripts/build-pwa.sh [https://app.ap3p-fitness.com]
-# Output: /app/pwa-release/pentarchy-vial-pwa.zip — upload & extract into the
+# Output: /app/pwa-release/pentarchy-pwa.zip — upload & extract into the
 # subdomain's public_html (SiteGround File Manager).
 set -euo pipefail
 ORIGIN="${1:-https://app.ap3p-fitness.com}"
@@ -17,6 +17,6 @@ if grep -rq "preview.emergentagent.com" "$OUT/_expo" "$OUT/index.html"; then
   echo "ERROR: build still references the preview server" >&2; exit 1
 fi
 mkdir -p /app/pwa-release
-rm -f /app/pwa-release/pentarchy-vial-pwa.zip
-(cd "$OUT" && zip -qr /app/pwa-release/pentarchy-vial-pwa.zip . -x "metadata.json")
-echo "Built for $ORIGIN → /app/pwa-release/pentarchy-vial-pwa.zip"
+rm -f /app/pwa-release/pentarchy-pwa.zip
+(cd "$OUT" && zip -qr /app/pwa-release/pentarchy-pwa.zip . -x "metadata.json")
+echo "Built for $ORIGIN → /app/pwa-release/pentarchy-pwa.zip"

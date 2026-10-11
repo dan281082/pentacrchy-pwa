@@ -149,7 +149,7 @@ export default function InvoiceScreen() {
             <View style={styles.amountCard}>
               <Text style={styles.amountLabel}>Send exactly</Text>
               <Text style={styles.amount} testID="invoice-amount">{invoice.amount} {invoice.token}</Text>
-              <Text style={styles.network}>{invoice.networkLabel || "TRON (TRC20)"}</Text>
+              <Text style={styles.network}>{invoice.networkLabel || invoice.network}</Text>
               <Text style={styles.fiat}>≈ {invoice.fiatTotal} {invoice.fiatCurrency}</Text>
             </View>
 
@@ -164,7 +164,7 @@ export default function InvoiceScreen() {
 
             {/* Address */}
             <View>
-              <Text style={styles.fieldLabel}>Wallet address ({invoice.token} · {invoice.networkLabel || "TRC20"})</Text>
+              <Text style={styles.fieldLabel}>Wallet address ({invoice.token} · {invoice.networkLabel || invoice.network})</Text>
               <Pressable style={styles.addressBox} onPress={copyAddress} testID="invoice-copy-address">
                 <Text style={styles.address} selectable>{invoice.address}</Text>
                 <Ionicons name={copied ? "checkmark" : "copy-outline"} size={18} color={copied ? colors.success : colors.brandSecondary} />

@@ -55,6 +55,7 @@ export function useProduct(id: string | number) {
     queryKey: qk.product(id),
     queryFn: () => catalogue.getProduct(id),
     enabled: !!id,
+    staleTime: 0, // always show live WooCommerce stock on the product page
   });
 }
 
