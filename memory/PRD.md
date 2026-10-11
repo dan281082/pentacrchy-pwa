@@ -161,3 +161,5 @@ overpaid/failed/cancelled; `complete` → gateway `payment_complete()` → WooCo
 - Names: manifest name "Pentarchy Vial", short "Pentarchy"; in-app wordmark PENTARCHY.
 - Crypto stays Test Mode until final production E2E. WP Mail SMTP not installed (email verified via order #276).
 - STATUS: release zip built; awaiting user to create subdomain + upload; then E2E on https://app.ap3p-fitness.com.
+- PWA LIVE at https://app.ap3p-fitness.com (SiteGround, A record → 35.214.14.95; earlier doubled subdomain app.ap3p-fitness.com.ap3p-fitness.com fixed by user). PHP proxy verified: loads WP, health 200 (connector 2.1.4), auth/catalogue/orders/labels OK, 401/403/404 guards OK (iteration_8).
+- Staff login test@test.com now rejected (password changed on WP) — staff check skipped by user.
