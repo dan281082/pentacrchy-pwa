@@ -17,6 +17,7 @@ Auth model:
 """
 
 import os
+import uuid
 import logging
 from typing import Any, Optional
 
@@ -73,6 +74,11 @@ async def _forward(
     }
     if token:
         headers["X-GLP-Customer-Token"] = token
+        if method == "GET":
+            # Bypass SiteGround Dynamic Cache for per-user reads: it keys on URL
+            # only, so a cached response (e.g. a 404) must never be reused
+            # across users or after a state change.
+            params = {**(params or {}), "_nc": uuid.uuid4().hex}
     if json_body is not None:
         headers["Content-Type"] = "application/json"
 

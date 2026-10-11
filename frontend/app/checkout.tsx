@@ -167,7 +167,7 @@ export default function CheckoutScreen() {
             </View>
             <View style={styles.sumRow}>
               <Text style={styles.sumName}>Postage</Text>
-              <Text style={styles.sumVal}>{selected ? (Number(selected.cost) === 0 ? "Your own label" : stripHtml(selected.costDisplay)) : "—"}</Text>
+              <Text style={styles.sumVal}>{selected && Number(selected.cost) !== 0 ? stripHtml(selected.costDisplay) : "Your own label"}</Text>
             </View>
           </View>
 

@@ -145,4 +145,4 @@ overpaid/failed/cancelled; `complete` → gateway `payment_complete()` → WooCo
   - private storage outside web root (fallback uploads/glp-labels with deny-all), never Media Library
   - WC order-screen metabox: view/download + Mark dispatched (cap-checked, nonce)
 - App: Provide Shipping Label section on order detail; staff Fulfilment tab (hidden unless user.fulfilment) + /fulfilment/[id]; checkout shows postage info instead of shipping price.
-- STATUS: connector v2.1.0 NOT YET INSTALLED on ap3p-fitness.com — waiting for user. Live E2E testing pending.
+- STATUS: v2.1.0 INSTALLED live. Full E2E verified (iteration_7): customer upload/replace/lock, staff ready/dispatch, isolation, validation. Proxy adds _nc cache-buster on authenticated GETs (SiteGround cache). Updated zip (adds no-cache headers on all glp/v1 responses) awaiting optional re-upload. Test order 263 now dispatched.

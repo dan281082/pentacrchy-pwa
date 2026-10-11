@@ -1,0 +1,54 @@
+{
+  "summary": "FULL E2E VERIFIED for the new fulfilment design (AST removed, customer-supplied postage label/QR). Branding: PENTARCHY shown throughout; no 'Apeps/APEPS' text visible on splash, login, home, orders tab, order detail, checkout, fulfilment list, or fulfilment order screen. CUSTOMER (tracktest.ap3p@mailinator.com): tab-fulfilment correctly ABSENT (count=0). Orders tab -> order-card-263 renders Processing + 'Label supplied' chip. Order detail renders shipping-label-section with customer-label LabelViewer, 'Postage label' + 'label.pdf · PDF · 192 B', customer-label-open PDF button, and label-replace-button. Pressing Replace shows label-uploader with label-kind-label / label-kind-qr toggles; switching to QR and uploading a 1x1 PNG via expect_file_chooser succeeded (POST /orders/263/label 200). After upload the section updated to 'Postage QR code · qr_test.png · PNG · 70 B' with customer-label-view 'Show QR code' button; pressing it opens customer-label-fullscreen modal with the image on white background; customer-label-close closes it. NEGATIVE: uploading a .txt renamed .png as a QR returned 415 and label-error 'QR codes must be a JPG or PNG image.' CHECKOUT (prod 134 'test' £0.10 in basket): co-postage-info visible with 'You supply your own postage. After payment, upload your postage label or QR code from My Orders.'; summary 'Postage' row shows '—' (NO £6 anywhere). STAFF (test@test.com, pw with # and %): tab-fulfilment visible; fulfilment-screen lists orders with 5 chips fulfil-filter-active (To do 8), awaiting_label (7), label_supplied (1), ready, dispatched (all have counts). fulfil-order-263 opens fulfil-detail-screen with FulfilStepper, fulfil-detail-state pill 'Label supplied', staff-label viewer with 'Show QR code' (staff-label-view), Print (staff-label-print), Download (staff-label-download); Items (1x 'test'); Customer: Name 'Track Tester', Telegram @tracktest_ap3p, email tracktest.ap3p@mailinator.com, phone 07700900123, delivery address 10 Downing St / London / SW1A 2AA / GB; History events listed. STAFF actions on 263: fulfil-mark-ready -> state pill becomes 'Ready to dispatch'; fulfil-mark-dispatched -> fulfil-dispatch-confirm panel -> fulfil-dispatch-confirm-button -> state pill 'Dispatched' + fulfil-dispatched-info 'Dispatched 11 Oct 2026, 08:49. Label locked.' + History records 'Marked ready to dispatch' and 'Marked dispatched'. POST-DISPATCH CUSTOMER: order 263 status 'Completed', label-locked message 'Dispatched on 11 Oct 2026 using your postage. The label can no longer be changed.', NO label-replace-button, NO label-uploader, NO label-upload-button; customer-label still viewable (Show QR code). BACKEND (14/14 pytest pass across 2 files, all against public /api/glp proxy): customer can read order 263 + label; owner isolation: intruder gets 404 on order 263 + 404 on /orders/263/label; role protection: customer gets 403 on /fulfilment/orders and /fulfilment/orders/263; staff list/detail/label return 200; server-side validation: fake PNG (text payload) returned 415 ('QR codes must be a JPG or PNG image.'); customer upload after dispatch returned 409 label_locked; staff re-dispatch returned 409. Known pre-existing React Native Web console issues (not new, do not block any flow): (a) 'props.pointerEvents is deprecated. Use style.pointerEvents' warning on every render; (b) '<button> cannot be a descendant of <button>' hydration error from FavouriteButton inside rail-card Pressable.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "checkout.tsx (Order summary)", "issues": [
+        "Summary 'Postage' row renders '—' (em-dash) rather than the review-spec string 'Your own label'. The co-postage-info section above already carries the 'You supply your own postage…' message, so this is cosmetic, but to match the exact acceptance criterion the summary row should read 'Your own label' (or similar). Reference: /app/frontend/app/checkout.tsx — the shipping-line summary when no shipping quote is returned."
+      ]}
+    ],
+    "react_native_issues": [
+      {"component": "react-native-web (global)", "issue": "Deprecation warning on every render: 'props.pointerEvents is deprecated. Use style.pointerEvents'. Carryover from iteration_6."},
+      {"component": "ProductCard / FavouriteButton (home rail)", "issue": "Nested Pressable renders <button> inside <button>: 'In HTML, <button> cannot be a descendant of <button>. This will cause a hydration error.' Carryover from iteration_5/6. Reference: /app/frontend/src/components/product/ProductCard.tsx."}
+    ]
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_glp_fulfilment.py",
+    "/app/backend/tests/test_glp_fulfilment_locked.py",
+    "/app/test_reports/pytest/pytest_glp_fulfilment.xml",
+    "/app/test_reports/pytest/pytest_glp_fulfilment_locked.xml"
+  ],
+  "action_items": [
+    "COSMETIC (optional): change the checkout order-summary 'Postage' line fallback from '—' to 'Your own label' to exactly match the review acceptance text. Code: /app/frontend/app/checkout.tsx shipping row.",
+    "LOW (carryover): replace `pointerEvents=` props with `style={{ pointerEvents: ... }}` to clear the react-native-web deprecation.",
+    "LOW (carryover): hoist FavouriteButton out of the rail-card Pressable to clear the nested-button hydration warning.",
+    "Order 263 is now DISPATCHED (Completed) with QR label (qr_test.png · PNG · 70 B). If further manual verification of the 'Processing + label_supplied' states is needed on this very order, it will need to be reset via WP admin or a new processing order used."
+  ],
+  "critical_code_review_comments": [
+    "glp_proxy.py: endpoints match the WP connector v2.1.0 (/orders/{id}/label GET+POST, /fulfilment/orders list/detail/label, /fulfilment/orders/{id}/ready, /fulfilment/orders/{id}/dispatch); _nc cache-buster correctly appended on authenticated GETs; secret never surfaced to responses.",
+    "ShippingLabelSection.tsx: correct state handling — if order.status pending/on-hold shows the waiting-for-payment info; if f.state === 'dispatched' shows the label-locked info and no replace controls; replace flow correctly reveals label-uploader with kind toggles; error path binds to label-error testID.",
+    "LabelViewer.tsx: image kind shows preview + 'Show QR code'/'View label'; PDF kind shows 'Open PDF label'; staffActions=true adds Print+Download; full-screen modal gated on current (loaded) file, QR fullscreen uses white background with scanning hint — matches review spec.",
+    "fulfilment/[id].tsx: canDispatch gates on status='processing' AND state in ('label_supplied','ready'); confirm panel uses testID fulfil-dispatch-confirm with cancel/confirm; dispatch sets WC to Completed server-side; shows fulfil-dispatched-info after."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_glp_fulfilment.py (new, 10 tests)",
+    "/app/backend/tests/test_glp_fulfilment_locked.py (new, 4 tests)",
+    "/app/test_reports/pytest/pytest_glp_fulfilment.xml (new)",
+    "/app/test_reports/pytest/pytest_glp_fulfilment_locked.xml (new)",
+    "/app/test_reports/iteration_7.json (new)"
+  ],
+  "success_rate": {
+    "backend": "100% (14/14 pytest assertions passed across customer owner-read, owner isolation, staff role protection, staff list/detail/label, upload validation 415, post-dispatch 409 label_locked, staff re-dispatch 409)",
+    "frontend": "100% functional (all 8 review-request UI flows verified). 1 cosmetic nit on checkout summary postage string + 2 carryover RN-web console warnings."
+  },
+  "seed_data_creation": "Live state changed on order 263 (tracktest.ap3p@mailinator.com) during this run: label replaced with qr_test.png (1x1 red PNG, 70 B); marked ready to dispatch; marked dispatched. Order 263 is now DISPATCHED / Completed with label locked. No new accounts or orders were created. Only order 263 was used for destructive actions, as instructed.",
+  "retest_needed": false,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "Order 263 is DISPATCHED. To re-test the 'Processing + label_supplied' flow, either (a) reset order 263's _glp_fulfil_state meta and _glp_fulfil_dispatched_at meta in WP admin / DB, or (b) use another processing order (NOTE: do NOT dispatch 258/156/155/154/151 — they belong to other real test accounts). Login testIDs are: input[data-testid='login-email'], input[data-testid='login-password'], [data-testid='login-submit']. Expo DocumentPicker on web uses a hidden <input type=file>; use `async with page.expect_file_chooser()` + `chooser.set_files(path)` after clicking [data-testid='label-upload-button']. For QR testing, a 1x1 PNG works: base64 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR4nGP8z8DwHwAFBQIAX8jx0gAAAABJRU5ErkJggg=='. Staff password contains # and % — pass it verbatim; the login flow URL-encodes correctly on the way to WP.",
+  "rca_of_issue": "No functional bug found this iteration. The sole cosmetic nit is in /app/frontend/app/checkout.tsx: when the shipping quote returns no methods (new fulfilment design has removed shipping charges server-side), the order-summary 'Postage' row falls back to '—' instead of a human-readable 'Your own label'. The co-postage-info card above already communicates the policy, so this is a one-line copy change if the main agent wants to match the exact review-spec wording."
+}
